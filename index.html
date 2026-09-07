@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,55 +22,112 @@
   <!-- NAVBAR -->
   <nav class="navbar">
     <div class="logo">MindDump</div>
-    <div class="safe-text">Your mind is safe here.</div>
+    <div class="safe-text">Your mind is safe here</div>
   </nav>
 
 
-  <!-- HOME -->
+  <!-- HOME SCREEN -->
   <section id="home-screen" class="screen active">
 
     <div class="hero">
-      <span class="eyebrow">YOUR PERSONAL PRODUCTIVITY ASSISTANT</span>
+
+      <span class="eyebrow">
+        ✦ AI PRODUCTIVITY ASSISTANT
+      </span>
 
       <h1>
-        Dump it.<br>
-        <span>Plan it.</span><br>
-        Do it.
+        Get it out<br>
+        of your head.
       </h1>
 
       <p>
-        Empty your mind. MindDump turns your thoughts into a
-        clear, prioritized plan so you know exactly what to do next.
+        Don't organize your thoughts first. Just dump everything
+        that's on your mind. MindDump turns the chaos into a clear,
+        actionable plan.
       </p>
+
     </div>
 
 
     <div class="dump-card">
 
-      <label for="brain-dump">What's on your mind?</label>
+      <div class="dump-heading">
+
+        <div class="dump-icon">🧠</div>
+
+        <div>
+          <h3>Brain Dump</h3>
+          <span>Just type naturally</span>
+          <span>No structure required</span>
+        </div>
+
+      </div>
+
 
       <textarea
         id="brain-dump"
-        placeholder="Tell me everything... assignments, errands, calls, things you've been putting off..."
+        placeholder="I have an assignment due tomorrow... I need to study... call Mum... buy groceries..."
       ></textarea>
 
-      <div class="example-buttons">
-        <button class="example-btn" data-example="school">School</button>
-        <button class="example-btn" data-example="work">Work</button>
-        <button class="example-btn" data-example="life">Life</button>
-        <button class="example-btn" data-example="everything">Everything</button>
+
+      <div class="dump-note">
+        ✦ Don't organize it. Just dump it.
       </div>
 
-      <button id="organize-btn" class="primary-btn">
-        Organize My Thoughts →
+
+      <button
+        id="organize-btn"
+        class="primary-btn"
+      >
+        Organize My Thoughts
+        <span>→</span>
       </button>
+
+
+      <div class="try-example">
+
+        <span>Try an example:</span>
+
+        <div class="example-buttons">
+
+          <button
+            class="example-btn"
+            data-example="school"
+          >
+            🎓 School
+          </button>
+
+          <button
+            class="example-btn"
+            data-example="work"
+          >
+            💼 Work
+          </button>
+
+          <button
+            class="example-btn"
+            data-example="life"
+          >
+            🏠 Life
+          </button>
+
+          <button
+            class="example-btn"
+            data-example="everything"
+          >
+            ✦ Everything
+          </button>
+
+        </div>
+
+      </div>
 
     </div>
 
   </section>
 
 
-  <!-- PROCESSING -->
+  <!-- PROCESSING SCREEN -->
   <section id="processing-screen" class="screen">
 
     <div class="processing-box">
@@ -80,13 +136,28 @@
 
       <h2>Making sense of the chaos...</h2>
 
-      <p id="processing-text">Reading your thoughts...</p>
+      <p id="processing-text">
+        Reading your thoughts...
+      </p>
 
       <div class="processing-steps">
-        <div id="step-1">○ Identifying tasks</div>
-        <div id="step-2">○ Detecting urgency</div>
-        <div id="step-3">○ Grouping related tasks</div>
-        <div id="step-4">○ Building your plan</div>
+
+        <div id="step-1">
+          ○ Identifying tasks
+        </div>
+
+        <div id="step-2">
+          ○ Detecting urgency
+        </div>
+
+        <div id="step-3">
+          ○ Grouping related tasks
+        </div>
+
+        <div id="step-4">
+          ○ Building your plan
+        </div>
+
       </div>
 
     </div>
@@ -94,19 +165,34 @@
   </section>
 
 
-  <!-- DASHBOARD -->
+  <!-- DASHBOARD SCREEN -->
   <section id="dashboard-screen" class="screen">
 
     <div class="dashboard-header">
 
       <div>
-        <span class="eyebrow">YOUR MIND AT A GLANCE</span>
-        <h2>Your plan is ready.</h2>
+
+        <span class="eyebrow">
+          YOUR MIND AT A GLANCE
+        </span>
+
+        <h2>
+          Your plan is ready.
+        </h2>
+
       </div>
 
+
       <div class="brain-load">
-        <span>Brain Load</span>
-        <strong id="brain-load-value">0%</strong>
+
+        <span>
+          Brain Load
+        </span>
+
+        <strong id="brain-load-value">
+          0%
+        </strong>
+
       </div>
 
     </div>
@@ -132,60 +218,72 @@
     </div>
 
 
-    <!-- TASKS -->
-
+    <!-- TASK SECTIONS -->
     <div class="task-sections">
 
-      <div class="task-section high-section">
+      <div class="task-section">
 
         <div class="section-title">
           <span class="priority-dot high"></span>
           High Priority
         </div>
 
-        <div id="high-tasks" class="task-list"></div>
+        <div
+          id="high-tasks"
+          class="task-list"
+        ></div>
 
       </div>
 
 
-      <div class="task-section medium-section">
+      <div class="task-section">
 
         <div class="section-title">
           <span class="priority-dot medium"></span>
           Medium Priority
         </div>
 
-        <div id="medium-tasks" class="task-list"></div>
+        <div
+          id="medium-tasks"
+          class="task-list"
+        ></div>
 
       </div>
 
 
-      <div class="task-section low-section">
+      <div class="task-section">
 
         <div class="section-title">
           <span class="priority-dot low"></span>
           Low Priority
         </div>
 
-        <div id="low-tasks" class="task-list"></div>
+        <div
+          id="low-tasks"
+          class="task-list"
+        ></div>
 
       </div>
 
     </div>
 
 
-    <!-- MINDFLOW SETTINGS -->
-
+    <!-- MINDFLOW -->
     <div class="flow-settings">
 
       <div class="settings-heading">
 
-        <span class="eyebrow">MINDFLOW</span>
+        <span class="eyebrow">
+          MINDFLOW
+        </span>
 
-        <h3>Build your focus session</h3>
+        <h3>
+          Build your focus session
+        </h3>
 
         <p>
-          Choose when you want to start and how long you want your breaks to be.
+          Choose when you want to start and how long
+          you want your breaks to be.
         </p>
 
       </div>
@@ -193,15 +291,15 @@
 
       <div class="settings-grid">
 
-        <!-- START TIME -->
-
         <div class="setting-card">
 
           <label for="start-time">
             🕐 Start time
           </label>
 
-          <p>When should MindFlow begin?</p>
+          <p>
+            When should MindFlow begin?
+          </p>
 
           <input
             type="time"
@@ -212,15 +310,15 @@
         </div>
 
 
-        <!-- BREAK -->
-
         <div class="setting-card">
 
           <label for="break-duration">
             ☕ Break duration
           </label>
 
-          <p>Breaks will be added between tasks.</p>
+          <p>
+            Breaks will be added between tasks.
+          </p>
 
           <select id="break-duration">
 
@@ -232,7 +330,10 @@
               5 minutes
             </option>
 
-            <option value="10" selected>
+            <option
+              value="10"
+              selected
+            >
               10 minutes
             </option>
 
@@ -255,8 +356,6 @@
       </div>
 
 
-      <!-- AUTO PLAN -->
-
       <div class="plan-preview">
 
         <div class="plan-header">
@@ -273,7 +372,10 @@
 
           </div>
 
-          <span id="break-label" class="break-badge">
+          <span
+            id="break-label"
+            class="break-badge"
+          >
             10 min breaks
           </span>
 
@@ -300,7 +402,7 @@
   </section>
 
 
-  <!-- MINDFLOW -->
+  <!-- FLOW SCREEN -->
   <section id="flow-screen" class="screen">
 
     <div class="flow-top">
@@ -375,14 +477,12 @@
           Pause
         </button>
 
-
         <button
           id="skip-btn"
           class="secondary-btn"
         >
           Skip
         </button>
-
 
         <button
           id="end-task-btn"
@@ -411,7 +511,7 @@
   </section>
 
 
-  <!-- COMPLETE -->
+  <!-- COMPLETE SCREEN -->
   <section id="complete-screen" class="screen">
 
     <div class="complete-box">
@@ -449,4 +549,3 @@
 
 </body>
 </html>
-```
