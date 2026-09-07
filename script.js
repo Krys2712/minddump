@@ -1,3 +1,4 @@
+```javascript
 let tasks = [];
 
 let currentTaskIndex = 0;
@@ -35,6 +36,7 @@ const examples = {
 
   everything:
     "I have a computer science assignment due tomorrow, I need to study for my networking test on Friday, finish my portfolio project this week, reply to Sarah, buy groceries, clean my room, call Mum tonight and start learning Python."
+
 };
 
 
@@ -51,6 +53,7 @@ function showScreen(id) {
   document.getElementById(id).classList.add("active");
 
   window.scrollTo(0, 0);
+
 }
 
 
@@ -64,7 +67,8 @@ document.querySelectorAll(".example-btn").forEach(button => {
 
     const type = button.dataset.example;
 
-    document.getElementById("brain-dump").value = examples[type];
+    document.getElementById("brain-dump").value =
+      examples[type];
 
   });
 
@@ -82,25 +86,29 @@ document
 
 function organizeThoughts() {
 
-  const input = document
-    .getElementById("brain-dump")
-    .value
-    .trim();
+  const input =
+    document.getElementById("brain-dump").value.trim();
 
   if (!input) {
 
-    alert("Dump something first — your brain deserves the unload.");
+    alert(
+      "Dump something first — your brain deserves the unload."
+    );
 
     return;
+
   }
 
   tasks = extractTasks(input);
 
   if (!tasks.length) {
 
-    alert("I couldn't identify any tasks. Try adding a few things you need to do.");
+    alert(
+      "I couldn't identify any tasks. Try adding a few things you need to do."
+    );
 
     return;
+
   }
 
   showScreen("processing-screen");
@@ -209,6 +217,7 @@ function extractTasks(text) {
 
 
   return pieces
+
     .map(title => {
 
       title = title.replace(/^[\s,.-]+/, "");
@@ -232,6 +241,7 @@ function extractTasks(text) {
       };
 
     })
+
     .filter(Boolean);
 
 }
@@ -272,11 +282,19 @@ function detectPriority(text) {
 
   const lower = text.toLowerCase();
 
-  if (highKeywords.some(word => lower.includes(word))) {
+  if (
+    highKeywords.some(word =>
+      lower.includes(word)
+    )
+  ) {
     return "high";
   }
 
-  if (mediumKeywords.some(word => lower.includes(word))) {
+  if (
+    mediumKeywords.some(word =>
+      lower.includes(word)
+    )
+  ) {
     return "medium";
   }
 
@@ -386,6 +404,7 @@ function renderDashboard() {
     Math.round((totalMinutes / 360) * 100)
   );
 
+
   document.getElementById("brain-load-value").textContent =
     `${brainLoad}%`;
 
@@ -399,6 +418,10 @@ function renderDashboard() {
 
 }
 
+
+/* =========================
+   FORMAT TOTAL TIME
+========================= */
 
 function formatTotalTime(minutes) {
 
@@ -425,9 +448,8 @@ function formatTotalTime(minutes) {
 
 function renderTaskGroup(priority) {
 
-  const container = document.getElementById(
-    `${priority}-tasks`
-  );
+  const container =
+    document.getElementById(`${priority}-tasks`);
 
   container.innerHTML = "";
 
@@ -440,9 +462,10 @@ function renderTaskGroup(priority) {
   if (!matchingTasks.length) {
 
     container.innerHTML =
-      `<p style="color:#969c95;font-size:13px;">No tasks here.</p>`;
+      `<p style="color:#96919b;font-size:13px;">No tasks here.</p>`;
 
     return;
+
   }
 
 
@@ -454,13 +477,19 @@ function renderTaskGroup(priority) {
 
     item.innerHTML = `
 
-      <strong>${escapeHTML(task.title)}</strong>
+      <strong>
+        ${escapeHTML(task.title)}
+      </strong>
 
       <div class="task-meta">
 
-        <span>${task.category}</span>
+        <span>
+          ${escapeHTML(task.category)}
+        </span>
 
-        <span>${task.duration} min</span>
+        <span>
+          ${task.duration} min
+        </span>
 
       </div>
 
@@ -494,7 +523,8 @@ function updatePlan() {
   );
 
   startTime =
-    document.getElementById("start-time").value || "09:00";
+    document.getElementById("start-time").value ||
+    "09:00";
 
 
   buildFlowItems();
@@ -505,7 +535,7 @@ function updatePlan() {
 
 
 /* =========================
-   BUILD FLOW
+   BUILD MINDFLOW
 ========================= */
 
 function buildFlowItems() {
@@ -536,6 +566,11 @@ function buildFlowItems() {
 
     });
 
+
+    /*
+      Add breaks only BETWEEN tasks.
+      No break is added after the final task.
+    */
 
     if (
       breakDuration > 0 &&
@@ -586,17 +621,25 @@ function renderPlan() {
   container.innerHTML = "";
 
 
-  const startMinutes = timeToMinutes(startTime);
+  const startMinutes =
+    timeToMinutes(startTime);
 
-  let currentMinutes = startMinutes;
+  let currentMinutes =
+    startMinutes;
 
 
   flowItems.forEach(item => {
 
-    const row = document.createElement("div");
+    const row =
+      document.createElement("div");
+
 
     row.className =
-      `plan-item ${item.type === "break" ? "break-item" : ""}`;
+      `plan-item ${
+        item.type === "break"
+          ? "break-item"
+          : ""
+      }`;
 
 
     const timeLabel =
@@ -612,14 +655,25 @@ function renderPlan() {
       <div>
 
         <strong>
-          ${item.type === "break" ? "☕ " : ""}
+
+          ${
+            item.type === "break"
+              ? "☕ "
+              : ""
+          }
+
           ${escapeHTML(item.title)}
+
         </strong>
 
         <small>
-          ${item.type === "break"
-            ? "Rest and recharge"
-            : item.category}
+
+          ${
+            item.type === "break"
+              ? "Rest and recharge"
+              : escapeHTML(item.category)
+          }
+
         </small>
 
       </div>
@@ -634,7 +688,8 @@ function renderPlan() {
     container.appendChild(row);
 
 
-    currentMinutes += item.duration;
+    currentMinutes +=
+      item.duration;
 
   });
 
@@ -660,24 +715,39 @@ function timeToMinutes(time) {
   const [hours, minutes] =
     time.split(":").map(Number);
 
-  return hours * 60 + minutes;
+  return (
+    hours * 60 +
+    minutes
+  );
 
 }
 
 
 function formatTime(totalMinutes) {
 
-  totalMinutes = totalMinutes % (24 * 60);
+  totalMinutes =
+    totalMinutes % (24 * 60);
 
-  let hours = Math.floor(totalMinutes / 60);
 
-  const minutes = totalMinutes % 60;
+  let hours =
+    Math.floor(totalMinutes / 60);
 
-  const period = hours >= 12 ? "PM" : "AM";
+  const minutes =
+    totalMinutes % 60;
 
-  hours = hours % 12;
 
-  if (hours === 0) hours = 12;
+  const period =
+    hours >= 12 ? "PM" : "AM";
+
+
+  hours =
+    hours % 12;
+
+
+  if (hours === 0) {
+    hours = 12;
+  }
+
 
   return `${hours}:${String(minutes).padStart(2, "0")} ${period}`;
 
@@ -696,9 +766,7 @@ document
 function startFlow() {
 
   if (!flowItems.length) {
-
     buildFlowItems();
-
   }
 
 
@@ -753,6 +821,13 @@ function startCurrentFlowItem() {
     totalSeconds;
 
 
+  /*
+    IMPORTANT:
+    The timer only displays the CURRENT
+    task or break. It never displays the
+    original brain dump.
+  */
+
   document.getElementById("flow-task").textContent =
     item.title;
 
@@ -765,16 +840,21 @@ function startCurrentFlowItem() {
 
   document.getElementById("flow-description").textContent =
     isBreak
+
       ? "Step away, breathe, and recharge. Your next task is waiting."
+
       : "Focus on this one thing. Nothing else.";
 
 
   document.getElementById("flow-mode-label").textContent =
-    isBreak ? "MINDFLOW • BREAK" : "MINDFLOW • FOCUS";
+    isBreak
+      ? "MINDFLOW • BREAK"
+      : "MINDFLOW • FOCUS";
 
 
   const timer =
     document.getElementById("timer");
+
 
   timer.classList.toggle(
     "break-mode",
@@ -788,6 +868,10 @@ function startCurrentFlowItem() {
       : "Stay focused.";
 
 
+  document.getElementById("pause-btn").textContent =
+    "Pause";
+
+
   updateTimerDisplay();
 
   updateFlowProgress();
@@ -795,29 +879,26 @@ function startCurrentFlowItem() {
   updateNextFlowItem();
 
 
-  document.getElementById("pause-btn").textContent =
-    "Pause";
+  timerInterval =
+    setInterval(() => {
+
+      if (isPaused) return;
 
 
-  timerInterval = setInterval(() => {
+      remainingSeconds--;
 
-    if (isPaused) return;
-
-
-    remainingSeconds--;
-
-    updateTimerDisplay();
+      updateTimerDisplay();
 
 
-    if (remainingSeconds <= 0) {
+      if (remainingSeconds <= 0) {
 
-      clearInterval(timerInterval);
+        clearInterval(timerInterval);
 
-      completeCurrentFlowItem();
+        completeCurrentFlowItem();
 
-    }
+      }
 
-  }, 1000);
+    }, 1000);
 
 }
 
@@ -829,7 +910,10 @@ function startCurrentFlowItem() {
 function updateTimerDisplay() {
 
   const minutes =
-    Math.floor(remainingSeconds / 60);
+    Math.floor(
+      remainingSeconds / 60
+    );
+
 
   const seconds =
     remainingSeconds % 60;
@@ -842,31 +926,52 @@ function updateTimerDisplay() {
 
 
 /* =========================
-   PROGRESS
+   FLOW PROGRESS
 ========================= */
 
 function updateFlowProgress() {
 
   const taskCount =
-    flowItems.filter(item => item.type === "task").length;
+    flowItems.filter(
+      item => item.type === "task"
+    ).length;
 
 
   const completedTasks =
     flowItems
       .slice(0, currentFlowIndex)
-      .filter(item => item.type === "task")
+      .filter(
+        item => item.type === "task"
+      )
       .length;
 
 
-  const currentTaskNumber =
-    Math.min(completedTasks + 1, taskCount);
+  let currentTaskNumber =
+    completedTasks + 1;
+
+
+  if (currentTaskNumber > taskCount) {
+    currentTaskNumber = taskCount;
+  }
+
+
+  /*
+    During a break, show the task that
+    has just been completed rather than
+    pretending the break is another task.
+  */
+
+  const displayTaskNumber =
+    isBreak
+      ? Math.max(1, completedTasks)
+      : currentTaskNumber;
 
 
   document.getElementById("flow-progress-text").textContent =
-    `${currentTaskNumber} of ${taskCount}`;
+    `Task ${displayTaskNumber} of ${taskCount}`;
 
 
-  const percent =
+  let percent =
     taskCount
       ? (completedTasks / taskCount) * 100
       : 0;
@@ -884,7 +989,7 @@ function updateFlowProgress() {
 
 function updateNextFlowItem() {
 
-  const next =
+  let next =
     flowItems[currentFlowIndex + 1];
 
 
@@ -898,10 +1003,23 @@ function updateNextFlowItem() {
   }
 
 
+  /*
+    If the current item is a task and the
+    next item is a break, show the break.
+  */
+
+  if (next.type === "break") {
+
+    document.getElementById("next-task-title").textContent =
+      `☕ Break • ${next.duration} min`;
+
+    return;
+
+  }
+
+
   document.getElementById("next-task-title").textContent =
-    next.type === "break"
-      ? `☕ Break • ${next.duration} min`
-      : next.title;
+    next.title;
 
 }
 
@@ -912,23 +1030,32 @@ function updateNextFlowItem() {
 
 document
   .getElementById("pause-btn")
-  .addEventListener("click", toggleTimer);
+  .addEventListener(
+    "click",
+    toggleTimer
+  );
 
 
 function toggleTimer() {
 
-  isPaused = !isPaused;
+  isPaused =
+    !isPaused;
 
 
   document.getElementById("pause-btn").textContent =
-    isPaused ? "Resume" : "Pause";
+    isPaused
+      ? "Resume"
+      : "Pause";
 
 
   document.getElementById("timer-message").textContent =
     isPaused
+
       ? "Timer paused."
+
       : isBreak
         ? "Take a moment. You've earned it."
+
         : "Stay focused.";
 
 }
@@ -940,7 +1067,10 @@ function toggleTimer() {
 
 document
   .getElementById("skip-btn")
-  .addEventListener("click", skipCurrentItem);
+  .addEventListener(
+    "click",
+    skipCurrentItem
+  );
 
 
 function skipCurrentItem() {
@@ -960,12 +1090,16 @@ function skipCurrentItem() {
 
 document
   .getElementById("end-task-btn")
-  .addEventListener("click", endCurrentItem);
+  .addEventListener(
+    "click",
+    endCurrentItem
+  );
 
 
 function endCurrentItem() {
 
   clearInterval(timerInterval);
+
 
   document.getElementById("timer-message").textContent =
     isBreak
@@ -995,9 +1129,20 @@ function completeCurrentFlowItem() {
 
   document.getElementById("timer-message").textContent =
     isBreak
+
       ? "Break over. Let's get back to it!"
+
       : "Task complete!";
 
+
+  /*
+    Automatically move to the next item.
+    This means:
+
+    TASK → BREAK → TASK → BREAK → TASK
+
+    until the final task is complete.
+  */
 
   setTimeout(() => {
 
@@ -1019,13 +1164,18 @@ function initializeAudio() {
   if (!audioContext) {
 
     audioContext =
-      new (window.AudioContext ||
-        window.webkitAudioContext)();
+      new (
+        window.AudioContext ||
+        window.webkitAudioContext
+      )();
 
   }
 
 
-  if (audioContext.state === "suspended") {
+  if (
+    audioContext.state ===
+    "suspended"
+  ) {
 
     audioContext.resume();
 
@@ -1046,52 +1196,63 @@ function playBeep() {
   ];
 
 
-  frequencies.forEach((frequency, index) => {
+  frequencies.forEach(
+    (frequency, index) => {
 
-    const oscillator =
-      audioContext.createOscillator();
-
-    const gain =
-      audioContext.createGain();
+      const oscillator =
+        audioContext.createOscillator();
 
 
-    oscillator.frequency.value =
-      frequency;
-
-    oscillator.type = "sine";
+      const gain =
+        audioContext.createGain();
 
 
-    oscillator.connect(gain);
-
-    gain.connect(audioContext.destination);
-
-
-    const start =
-      audioContext.currentTime +
-      index * 0.18;
+      oscillator.frequency.value =
+        frequency;
 
 
-    gain.gain.setValueAtTime(
-      0.001,
-      start
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.3,
-      start + 0.02
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.001,
-      start + 0.14
-    );
+      oscillator.type =
+        "sine";
 
 
-    oscillator.start(start);
+      oscillator.connect(gain);
 
-    oscillator.stop(start + 0.15);
+      gain.connect(
+        audioContext.destination
+      );
 
-  });
+
+      const start =
+        audioContext.currentTime +
+        index * 0.18;
+
+
+      gain.gain.setValueAtTime(
+        0.001,
+        start
+      );
+
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.3,
+        start + 0.02
+      );
+
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        start + 0.14
+      );
+
+
+      oscillator.start(start);
+
+      oscillator.stop(
+        start + 0.15
+      );
+
+    }
+  );
 
 }
 
@@ -1104,8 +1265,13 @@ function finishFlow() {
 
   clearInterval(timerInterval);
 
+
   document.getElementById("progress-fill").style.width =
     "100%";
+
+
+  document.getElementById("flow-progress-text").textContent =
+    `Task ${tasks.length} of ${tasks.length}`;
 
 
   document.getElementById("completion-message").textContent =
@@ -1118,17 +1284,59 @@ function finishFlow() {
 
 
 /* =========================
-   RESET
+   SECURITY HELPER
+========================= */
+
+function escapeHTML(value) {
+
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+/* =========================
+   RESET PROCESSING STATE
+========================= */
+
+function resetProcessingSteps() {
+
+  [
+    "step-1",
+    "step-2",
+    "step-3",
+    "step-4"
+  ].forEach(id => {
+
+    document
+      .getElementById(id)
+      .classList.remove("done");
+
+  });
+
+}
+
+
+/* =========================
+   RESTART
 ========================= */
 
 document
   .getElementById("restart-btn")
-  .addEventListener("click", resetApp);
+  .addEventListener(
+    "click",
+    restartMindDump
+  );
 
 
-function resetApp() {
+function restartMindDump() {
 
   clearInterval(timerInterval);
+
 
   tasks = [];
 
@@ -1138,24 +1346,30 @@ function resetApp() {
 
   currentTaskIndex = 0;
 
+  remainingSeconds = 0;
+
+  totalSeconds = 0;
+
+  isPaused = false;
+
+  isBreak = false;
+
+
   document.getElementById("brain-dump").value = "";
+
+
+  document.getElementById("timer").textContent =
+    "00:00";
+
+
+  document.getElementById("progress-fill").style.width =
+    "0%";
+
+
+  resetProcessingSteps();
+
 
   showScreen("home-screen");
 
 }
-
-
-/* =========================
-   SECURITY HELPER
-========================= */
-
-function escapeHTML(text) {
-
-  const div =
-    document.createElement("div");
-
-  div.textContent = text;
-
-  return div.innerHTML;
-
-}
+```
