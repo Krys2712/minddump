@@ -1,1375 +1,1068 @@
-```javascript
-let tasks = [];
-
-let currentTaskIndex = 0;
-let timerInterval = null;
-
-let remainingSeconds = 0;
-let totalSeconds = 0;
-
-let isPaused = false;
-let audioContext = null;
-
-let breakDuration = 10;
-let startTime = "09:00";
-
-let flowItems = [];
-let currentFlowIndex = 0;
-
-let isBreak = false;
+/* =========================================
+   MINDDUMP — THIRD.JS
+   Frontend-only productivity assistant
+========================================= */
 
 
-/* =========================
-   EXAMPLES
-========================= */
+/* =========================================
+   SCREEN MANAGEMENT
+========================================= */
 
-const examples = {
-
-  school:
-    "I have a computer science assignment due tomorrow, study for my networking test on Friday, finish my portfolio project this week and start learning Python.",
-
-  work:
-    "Finish the report by tomorrow, reply to the team email, prepare for Monday's meeting, organize my files and send the client update.",
-
-  life:
-    "Buy groceries, clean my room, call Mum tonight, reply to Sarah, do laundry and plan my weekend.",
-
-  everything:
-    "I have a computer science assignment due tomorrow, I need to study for my networking test on Friday, finish my portfolio project this week, reply to Sarah, buy groceries, clean my room, call Mum tonight and start learning Python."
-
+const screens = {
+    home: document.getElementById("home-screen"),
+    processing: document.getElementById("processing-screen"),
+    dashboard: document.getElementById("dashboard-screen"),
+    flow: document.getElementById("flow-screen"),
+    break: document.getElementById("break-screen"),
+    complete: document.getElementById("complete-screen")
 };
 
+function showScreen(screenName) {
 
-/* =========================
-   SCREEN CONTROL
-========================= */
+    Object.values(screens).forEach(screen => {
+        screen.classList.remove("active");
+    });
 
-function showScreen(id) {
+    screens[screenName].classList.add("active");
 
-  document.querySelectorAll(".screen").forEach(screen => {
-    screen.classList.remove("active");
-  });
-
-  document.getElementById(id).classList.add("active");
-
-  window.scrollTo(0, 0);
-
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
 }
 
 
-/* =========================
+/* =========================================
+   DATA
+========================================= */
+
+let tasks = [];
+
+let currentTaskIndex = 0;
+
+let timerInterval = null;
+
+let breakInterval = null;
+
+let taskTimeRemaining = 0;
+
+let breakTimeRemaining = 0;
+
+let taskTotalSeconds = 0;
+
+let breakTotalSeconds = 0;
+
+let isPaused = false;
+
+
+/* =========================================
+   EXAMPLE BRAIN DUMPS
+========================================= */
+
+const examples = {
+
+    school: `
+I have a Computer Science assignment due tomorrow.
+I need to study for my networking test.
+I haven't finished my programming notes.
+I need to submit my assignment before 5pm.
+I should revise cybersecurity.
+I also need to reply to my group members.
+    `,
+
+    work: `
+I need to finish the report today.
+Send the client the updated document.
+Reply to the emails in my inbox.
+Prepare for tomorrow's meeting.
+Update the spreadsheet.
+I also need to follow up with the team.
+    `,
+
+    life: `
+I need to clean my room.
+Buy groceries.
+Call Mum.
+Do my laundry.
+Pay my bills.
+Book an appointment.
+I also want to get some rest.
+    `,
+
+    everything: `
+I have an assignment due tomorrow.
+I need to study for my test.
+Reply to Sarah.
+Buy groceries.
+Finish the work report.
+Call Mum.
+Clean my room.
+Pay my bills.
+Prepare for tomorrow's meeting.
+I really need to get some rest.
+    `
+};
+
+
+/* =========================================
    EXAMPLE BUTTONS
-========================= */
+========================================= */
 
 document.querySelectorAll(".example-btn").forEach(button => {
 
-  button.addEventListener("click", () => {
+    button.addEventListener("click", () => {
 
-    const type = button.dataset.example;
+        const type = button.dataset.example;
 
-    document.getElementById("brain-dump").value =
-      examples[type];
+        const textarea = document.getElementById("brain-dump");
 
-  });
+        textarea.value = examples[type].trim();
+
+        textarea.focus();
+
+    });
 
 });
 
 
-/* =========================
-   ORGANIZE
-========================= */
+/* =========================================
+   ORGANIZE THOUGHTS
+========================================= */
 
 document
-  .getElementById("organize-btn")
-  .addEventListener("click", organizeThoughts);
+    .getElementById("organize-btn")
+    .addEventListener("click", organizeThoughts);
 
 
 function organizeThoughts() {
 
-  const input =
-    document.getElementById("brain-dump").value.trim();
+    const input = document
+        .getElementById("brain-dump")
+        .value
+        .trim();
 
-  if (!input) {
+    if (!input) {
 
-    alert(
-      "Dump something first — your brain deserves the unload."
-    );
+        alert("Dump something first. Your mind doesn't have to be organized.");
 
-    return;
+        return;
+    }
 
-  }
+    showScreen("processing");
 
-  tasks = extractTasks(input);
-
-  if (!tasks.length) {
-
-    alert(
-      "I couldn't identify any tasks. Try adding a few things you need to do."
-    );
-
-    return;
-
-  }
-
-  showScreen("processing-screen");
-
-  runProcessing();
+    runProcessing();
 
 }
 
 
-/* =========================
+/* =========================================
    PROCESSING ANIMATION
-========================= */
+========================================= */
 
 function runProcessing() {
 
-  const steps = [
-    "step-1",
-    "step-2",
-    "step-3",
-    "step-4"
-  ];
+    const messages = [
+        "Reading your thoughts...",
+        "Finding everything you need to do...",
+        "Figuring out what matters first...",
+        "Building a plan that feels manageable..."
+    ];
 
-  const messages = [
-    "Reading your thoughts...",
-    "Finding what needs to be done...",
-    "Figuring out what matters most...",
-    "Building your personal plan..."
-  ];
+    const messageElement =
+        document.getElementById("processing-message");
 
-  let index = 0;
+    let index = 0;
 
-  const interval = setInterval(() => {
+    messageElement.textContent = messages[0];
 
-    if (index > 0) {
+    const interval = setInterval(() => {
 
-      document
-        .getElementById(steps[index - 1])
-        .classList.add("done");
+        index++;
 
-    }
+        if (index < messages.length) {
 
-    document.getElementById("processing-text").textContent =
-      messages[index];
+            messageElement.textContent =
+                messages[index];
 
-    index++;
+        }
 
-    if (index === steps.length) {
+    }, 650);
 
-      clearInterval(interval);
 
-      document
-        .getElementById(steps[3])
-        .classList.add("done");
+    setTimeout(() => {
 
-      setTimeout(() => {
+        clearInterval(interval);
 
-        renderDashboard();
+        createTasks();
 
-        showScreen("dashboard-screen");
+        showDashboard();
 
-      }, 700);
-
-    }
-
-  }, 650);
+    }, 3000);
 
 }
 
 
-/* =========================
-   TASK EXTRACTION
-========================= */
+/* =========================================
+   CREATE TASKS
+========================================= */
 
-function extractTasks(text) {
+function createTasks() {
 
-  let cleaned = text
-    .replace(/\n+/g, ",")
-    .replace(/[•●]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+    const input =
+        document.getElementById("brain-dump").value.trim();
 
+    const lines = input
+        .split(/\n|[.!?]/)
+        .map(item => item.trim())
+        .filter(item => item.length > 3);
 
-  cleaned = cleaned.replace(
-    /\s+(?:and\s+)?(?=(?:start|finish|complete|reply|respond|buy|clean|call|study|learn|send|prepare|submit|do|work|organize|plan)\b)/gi,
-    ", "
-  );
 
+    tasks = lines.map((text, index) => {
 
-  let pieces = cleaned
-    .split(/[,;]+/)
-    .map(item => item.trim())
-    .filter(Boolean);
+        let priority = "low";
 
+        const lower = text.toLowerCase();
 
-  pieces = pieces.flatMap(piece => {
 
-    const split = piece.split(
-      /\s+(?=and\s+(?:start|finish|complete|reply|respond|buy|clean|call|study|learn|send|prepare|submit|do|work|organize|plan)\b)/i
-    );
+        /* HIGH PRIORITY */
 
-    return split.map(item =>
-      item.replace(/^and\s+/i, "").trim()
-    );
+        if (
+            lower.includes("tomorrow") ||
+            lower.includes("today") ||
+            lower.includes("due") ||
+            lower.includes("deadline") ||
+            lower.includes("urgent") ||
+            lower.includes("submit") ||
+            lower.includes("exam") ||
+            lower.includes("test")
+        ) {
 
-  });
+            priority = "high";
 
+        }
 
-  return pieces
 
-    .map(title => {
+        /* MEDIUM PRIORITY */
 
-      title = title.replace(/^[\s,.-]+/, "");
+        else if (
+            lower.includes("need") ||
+            lower.includes("finish") ||
+            lower.includes("prepare") ||
+            lower.includes("reply") ||
+            lower.includes("send") ||
+            lower.includes("study")
+        ) {
 
-      if (!title) return null;
+            priority = "medium";
 
-      return {
+        }
 
-        title:
-          title.charAt(0).toUpperCase() +
-          title.slice(1),
 
-        priority: detectPriority(title),
+        return {
 
-        category: detectCategory(title),
+            id: index + 1,
 
-        duration: estimateDuration(title),
+            title: capitalize(text),
 
-        completed: false
+            priority: priority,
 
-      };
+            duration: estimateDuration(text),
 
-    })
+            completed: false
 
-    .filter(Boolean);
-
-}
-
-
-/* =========================
-   PRIORITY
-========================= */
-
-function detectPriority(text) {
-
-  const highKeywords = [
-    "tomorrow",
-    "today",
-    "tonight",
-    "urgent",
-    "asap",
-    "deadline",
-    "due",
-    "immediately",
-    "submit",
-    "exam",
-    "test"
-  ];
-
-  const mediumKeywords = [
-    "this week",
-    "assignment",
-    "project",
-    "report",
-    "presentation",
-    "meeting",
-    "study",
-    "portfolio",
-    "prepare",
-    "important"
-  ];
-
-  const lower = text.toLowerCase();
-
-  if (
-    highKeywords.some(word =>
-      lower.includes(word)
-    )
-  ) {
-    return "high";
-  }
-
-  if (
-    mediumKeywords.some(word =>
-      lower.includes(word)
-    )
-  ) {
-    return "medium";
-  }
-
-  return "low";
-
-}
-
-
-/* =========================
-   CATEGORY
-========================= */
-
-function detectCategory(text) {
-
-  const lower = text.toLowerCase();
-
-  if (
-    /assignment|school|class|study|exam|test|portfolio|python|networking|computer science|learn/.test(lower)
-  ) {
-    return "School";
-  }
-
-  if (
-    /work|meeting|client|report|office|team|project/.test(lower)
-  ) {
-    return "Work";
-  }
-
-  if (
-    /groceries|clean|laundry|mum|room|call|reply|weekend/.test(lower)
-  ) {
-    return "Life";
-  }
-
-  return "Personal";
-
-}
-
-
-/* =========================
-   DURATION ESTIMATION
-========================= */
-
-function estimateDuration(text) {
-
-  const lower = text.toLowerCase();
-
-  if (
-    /assignment|project|portfolio|report|presentation/.test(lower)
-  ) {
-    return 60;
-  }
-
-  if (
-    /study|exam|test|learn|learning/.test(lower)
-  ) {
-    return 45;
-  }
-
-  if (
-    /clean|groceries|laundry|organize/.test(lower)
-  ) {
-    return 30;
-  }
-
-  if (
-    /call|reply|message|email|send/.test(lower)
-  ) {
-    return 10;
-  }
-
-  return 20;
-
-}
-
-
-/* =========================
-   DASHBOARD
-========================= */
-
-function renderDashboard() {
-
-  const totalMinutes = tasks.reduce(
-    (sum, task) => sum + task.duration,
-    0
-  );
-
-  const urgent = tasks.filter(
-    task => task.priority === "high"
-  ).length;
-
-
-  document.getElementById("total-tasks").textContent =
-    tasks.length;
-
-
-  document.getElementById("total-time").textContent =
-    formatTotalTime(totalMinutes);
-
-
-  document.getElementById("urgent-tasks").textContent =
-    urgent;
-
-
-  const brainLoad = Math.min(
-    100,
-    Math.round((totalMinutes / 360) * 100)
-  );
-
-
-  document.getElementById("brain-load-value").textContent =
-    `${brainLoad}%`;
-
-
-  renderTaskGroup("high");
-  renderTaskGroup("medium");
-  renderTaskGroup("low");
-
-
-  updatePlan();
-
-}
-
-
-/* =========================
-   FORMAT TOTAL TIME
-========================= */
-
-function formatTotalTime(minutes) {
-
-  const hours = Math.floor(minutes / 60);
-
-  const mins = minutes % 60;
-
-  if (hours && mins) {
-    return `${hours}h ${mins}m`;
-  }
-
-  if (hours) {
-    return `${hours}h`;
-  }
-
-  return `${mins}m`;
-
-}
-
-
-/* =========================
-   TASK GROUPS
-========================= */
-
-function renderTaskGroup(priority) {
-
-  const container =
-    document.getElementById(`${priority}-tasks`);
-
-  container.innerHTML = "";
-
-
-  const matchingTasks = tasks.filter(
-    task => task.priority === priority
-  );
-
-
-  if (!matchingTasks.length) {
-
-    container.innerHTML =
-      `<p style="color:#96919b;font-size:13px;">No tasks here.</p>`;
-
-    return;
-
-  }
-
-
-  matchingTasks.forEach(task => {
-
-    const item = document.createElement("div");
-
-    item.className = "task-item";
-
-    item.innerHTML = `
-
-      <strong>
-        ${escapeHTML(task.title)}
-      </strong>
-
-      <div class="task-meta">
-
-        <span>
-          ${escapeHTML(task.category)}
-        </span>
-
-        <span>
-          ${task.duration} min
-        </span>
-
-      </div>
-
-    `;
-
-    container.appendChild(item);
-
-  });
-
-}
-
-
-/* =========================
-   PLAN SETTINGS
-========================= */
-
-document
-  .getElementById("break-duration")
-  .addEventListener("change", updatePlan);
-
-
-document
-  .getElementById("start-time")
-  .addEventListener("change", updatePlan);
-
-
-function updatePlan() {
-
-  breakDuration = Number(
-    document.getElementById("break-duration").value
-  );
-
-  startTime =
-    document.getElementById("start-time").value ||
-    "09:00";
-
-
-  buildFlowItems();
-
-  renderPlan();
-
-}
-
-
-/* =========================
-   BUILD MINDFLOW
-========================= */
-
-function buildFlowItems() {
-
-  const sortedTasks = [...tasks].sort(
-    (a, b) =>
-      priorityValue(a.priority) -
-      priorityValue(b.priority)
-  );
-
-
-  flowItems = [];
-
-
-  sortedTasks.forEach((task, index) => {
-
-    flowItems.push({
-
-      type: "task",
-
-      title: task.title,
-
-      category: task.category,
-
-      duration: task.duration,
-
-      taskReference: task
+        };
 
     });
 
 
-    /*
-      Add breaks only BETWEEN tasks.
-      No break is added after the final task.
-    */
+    /* Make sure there are tasks */
 
-    if (
-      breakDuration > 0 &&
-      index < sortedTasks.length - 1
-    ) {
+    if (tasks.length === 0) {
 
-      flowItems.push({
-
-        type: "break",
-
-        title: "Take a break",
-
-        category: "BREAK",
-
-        duration: breakDuration,
-
-        taskReference: null
-
-      });
+        tasks = [
+            {
+                id: 1,
+                title: "Work through your brain dump",
+                priority: "medium",
+                duration: 25,
+                completed: false
+            }
+        ];
 
     }
 
-  });
+}
+
+
+/* =========================================
+   CAPITALIZE
+========================================= */
+
+function capitalize(text) {
+
+    return text.charAt(0).toUpperCase() + text.slice(1);
 
 }
 
 
-function priorityValue(priority) {
+/* =========================================
+   ESTIMATE TASK TIME
+========================================= */
 
-  if (priority === "high") return 1;
+function estimateDuration(text) {
 
-  if (priority === "medium") return 2;
+    const length = text.length;
 
-  return 3;
+    if (length < 35) return 15;
+
+    if (length < 65) return 25;
+
+    if (length < 100) return 35;
+
+    return 45;
 
 }
 
 
-/* =========================
-   RENDER AUTO PLAN
-========================= */
+/* =========================================
+   DASHBOARD
+========================================= */
+
+function showDashboard() {
+
+    updateDashboard();
+
+    showScreen("dashboard");
+
+}
+
+
+/* =========================================
+   UPDATE DASHBOARD
+========================================= */
+
+function updateDashboard() {
+
+    const high =
+        tasks.filter(task => task.priority === "high");
+
+    const medium =
+        tasks.filter(task => task.priority === "medium");
+
+    const low =
+        tasks.filter(task => task.priority === "low");
+
+
+    document.getElementById("total-tasks")
+        .textContent = tasks.length;
+
+
+    document.getElementById("urgent-tasks")
+        .textContent = high.length;
+
+
+    const totalMinutes =
+        tasks.reduce(
+            (sum, task) => sum + task.duration,
+            0
+        );
+
+
+    document.getElementById("total-time")
+        .textContent = `${totalMinutes}m`;
+
+
+    /* Brain load */
+
+    let brainLoad = Math.min(
+        95,
+        Math.max(
+            25,
+            tasks.length * 12 + high.length * 5
+        )
+    );
+
+
+    document.getElementById("brain-load-score")
+        .textContent = `${brainLoad}%`;
+
+
+    document.getElementById("brain-load-progress")
+        .style.width = `${brainLoad}%`;
+
+
+    document.getElementById("summary")
+        .textContent =
+        `We've turned ${tasks.length} thought${tasks.length === 1 ? "" : "s"} into a plan.`;
+
+    
+    renderTasks("high-tasks", high);
+
+    renderTasks("medium-tasks", medium);
+
+    renderTasks("low-tasks", low);
+
+    renderPlan();
+
+}
+
+
+/* =========================================
+   RENDER TASKS
+========================================= */
+
+function renderTasks(containerId, taskList) {
+
+    const container =
+        document.getElementById(containerId);
+
+    container.innerHTML = "";
+
+
+    if (taskList.length === 0) {
+
+        container.innerHTML = `
+            <div class="empty-task">
+                Nothing here.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    taskList.forEach(task => {
+
+        const card = document.createElement("div");
+
+        card.className = "task-card";
+
+
+        card.innerHTML = `
+            <div class="task-card-title">
+                ${escapeHTML(task.title)}
+            </div>
+
+            <div class="task-card-meta">
+                <span>⏱ ${task.duration} min</span>
+                <span>${task.priority}</span>
+            </div>
+        `;
+
+
+        container.appendChild(card);
+
+    });
+
+}
+
+
+/* =========================================
+   RENDER MINDFLOW PLAN
+========================================= */
 
 function renderPlan() {
 
-  const container =
-    document.getElementById("mindflow-plan");
+    const container =
+        document.getElementById("plan-list");
 
-  container.innerHTML = "";
-
-
-  const startMinutes =
-    timeToMinutes(startTime);
-
-  let currentMinutes =
-    startMinutes;
+    container.innerHTML = "";
 
 
-  flowItems.forEach(item => {
+    tasks.forEach((task, index) => {
 
-    const row =
-      document.createElement("div");
+        const item =
+            document.createElement("div");
 
-
-    row.className =
-      `plan-item ${
-        item.type === "break"
-          ? "break-item"
-          : ""
-      }`;
+        item.className = "plan-item";
 
 
-    const timeLabel =
-      formatTime(currentMinutes);
+        item.innerHTML = `
+
+            <div class="plan-number">
+                ${index + 1}
+            </div>
+
+            <div>
+                <strong>
+                    ${escapeHTML(task.title)}
+                </strong>
+
+                <small>
+                    ${task.duration} min · ${capitalize(task.priority)} priority
+                </small>
+            </div>
+
+        `;
 
 
-    row.innerHTML = `
+        container.appendChild(item);
 
-      <div class="plan-time">
-        ${timeLabel}
-      </div>
-
-      <div>
-
-        <strong>
-
-          ${
-            item.type === "break"
-              ? "☕ "
-              : ""
-          }
-
-          ${escapeHTML(item.title)}
-
-        </strong>
-
-        <small>
-
-          ${
-            item.type === "break"
-              ? "Rest and recharge"
-              : escapeHTML(item.category)
-          }
-
-        </small>
-
-      </div>
-
-      <div class="plan-duration">
-        ${item.duration} min
-      </div>
-
-    `;
-
-
-    container.appendChild(row);
-
-
-    currentMinutes +=
-      item.duration;
-
-  });
-
-
-  document.getElementById("plan-start-label").textContent =
-    `Starting at ${formatTime(startMinutes)}`;
-
-
-  document.getElementById("break-label").textContent =
-    breakDuration === 0
-      ? "No breaks"
-      : `${breakDuration} min breaks`;
+    });
 
 }
 
 
-/* =========================
-   TIME HELPERS
-========================= */
+/* =========================================
+   ESCAPE HTML
+========================================= */
 
-function timeToMinutes(time) {
+function escapeHTML(text) {
 
-  const [hours, minutes] =
-    time.split(":").map(Number);
+    const div = document.createElement("div");
 
-  return (
-    hours * 60 +
-    minutes
-  );
+    div.textContent = text;
+
+    return div.innerHTML;
 
 }
 
 
-function formatTime(totalMinutes) {
-
-  totalMinutes =
-    totalMinutes % (24 * 60);
-
-
-  let hours =
-    Math.floor(totalMinutes / 60);
-
-  const minutes =
-    totalMinutes % 60;
-
-
-  const period =
-    hours >= 12 ? "PM" : "AM";
-
-
-  hours =
-    hours % 12;
-
-
-  if (hours === 0) {
-    hours = 12;
-  }
-
-
-  return `${hours}:${String(minutes).padStart(2, "0")} ${period}`;
-
-}
-
-
-/* =========================
+/* =========================================
    START MINDFLOW
-========================= */
+========================================= */
 
 document
-  .getElementById("start-flow-btn")
-  .addEventListener("click", startFlow);
+    .getElementById("start-flow-btn")
+    .addEventListener("click", startFlow);
 
 
 function startFlow() {
 
-  if (!flowItems.length) {
-    buildFlowItems();
-  }
+    if (!tasks.length) return;
 
+    currentTaskIndex = 0;
 
-  initializeAudio();
+    tasks.forEach(task => {
+        task.completed = false;
+    });
 
-
-  currentFlowIndex = 0;
-
-  currentTaskIndex = 0;
-
-
-  showScreen("flow-screen");
-
-  startCurrentFlowItem();
+    startTask();
 
 }
 
 
-/* =========================
-   START CURRENT ITEM
-========================= */
+/* =========================================
+   START TASK
+========================================= */
 
-function startCurrentFlowItem() {
+function startTask() {
 
-  clearInterval(timerInterval);
+    clearTimers();
 
-  isPaused = false;
+    isPaused = false;
 
-
-  const item =
-    flowItems[currentFlowIndex];
-
-
-  if (!item) {
-
-    finishFlow();
-
-    return;
-
-  }
+    const task =
+        tasks[currentTaskIndex];
 
 
-  isBreak =
-    item.type === "break";
+    if (!task) {
+
+        completeFlow();
+
+        return;
+
+    }
 
 
-  totalSeconds =
-    item.duration * 60;
+    showScreen("flow");
 
 
-  remainingSeconds =
-    totalSeconds;
+    document.getElementById("focus-status")
+        .textContent =
+        `Task ${currentTaskIndex + 1} of ${tasks.length}`;
 
 
-  /*
-    IMPORTANT:
-    The timer only displays the CURRENT
-    task or break. It never displays the
-    original brain dump.
-  */
-
-  document.getElementById("flow-task").textContent =
-    item.title;
+    document.getElementById("flow-task")
+        .textContent = task.title;
 
 
-  document.getElementById("flow-category").textContent =
-    isBreak
-      ? "☕ BREAK"
-      : item.category.toUpperCase();
+    document.getElementById("flow-message")
+        .textContent =
+        "One thing at a time. You've got this.";
 
 
-  document.getElementById("flow-description").textContent =
-    isBreak
-
-      ? "Step away, breathe, and recharge. Your next task is waiting."
-
-      : "Focus on this one thing. Nothing else.";
+    updateNextTask();
 
 
-  document.getElementById("flow-mode-label").textContent =
-    isBreak
-      ? "MINDFLOW • BREAK"
-      : "MINDFLOW • FOCUS";
+    taskTotalSeconds =
+        task.duration * 60;
+
+    taskTimeRemaining =
+        taskTotalSeconds;
 
 
-  const timer =
-    document.getElementById("timer");
+    updateTaskTimerDisplay();
 
 
-  timer.classList.toggle(
-    "break-mode",
-    isBreak
-  );
+    timerInterval = setInterval(() => {
+
+        if (isPaused) return;
+
+        taskTimeRemaining--;
+
+        updateTaskTimerDisplay();
 
 
-  document.getElementById("timer-message").textContent =
-    isBreak
-      ? "Take a moment. You've earned it."
-      : "Stay focused.";
+        if (taskTimeRemaining <= 0) {
 
+            finishTask();
 
-  document.getElementById("pause-btn").textContent =
-    "Pause";
-
-
-  updateTimerDisplay();
-
-  updateFlowProgress();
-
-  updateNextFlowItem();
-
-
-  timerInterval =
-    setInterval(() => {
-
-      if (isPaused) return;
-
-
-      remainingSeconds--;
-
-      updateTimerDisplay();
-
-
-      if (remainingSeconds <= 0) {
-
-        clearInterval(timerInterval);
-
-        completeCurrentFlowItem();
-
-      }
+        }
 
     }, 1000);
 
 }
 
 
-/* =========================
-   TIMER DISPLAY
-========================= */
+/* =========================================
+   TASK TIMER DISPLAY
+========================================= */
 
-function updateTimerDisplay() {
+function updateTaskTimerDisplay() {
 
-  const minutes =
-    Math.floor(
-      remainingSeconds / 60
-    );
-
-
-  const seconds =
-    remainingSeconds % 60;
+    document.getElementById("timer")
+        .textContent =
+        formatTime(taskTimeRemaining);
 
 
-  document.getElementById("timer").textContent =
-    `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-
-}
+    const percentage =
+        (taskTimeRemaining / taskTotalSeconds) * 100;
 
 
-/* =========================
-   FLOW PROGRESS
-========================= */
-
-function updateFlowProgress() {
-
-  const taskCount =
-    flowItems.filter(
-      item => item.type === "task"
-    ).length;
-
-
-  const completedTasks =
-    flowItems
-      .slice(0, currentFlowIndex)
-      .filter(
-        item => item.type === "task"
-      )
-      .length;
-
-
-  let currentTaskNumber =
-    completedTasks + 1;
-
-
-  if (currentTaskNumber > taskCount) {
-    currentTaskNumber = taskCount;
-  }
-
-
-  /*
-    During a break, show the task that
-    has just been completed rather than
-    pretending the break is another task.
-  */
-
-  const displayTaskNumber =
-    isBreak
-      ? Math.max(1, completedTasks)
-      : currentTaskNumber;
-
-
-  document.getElementById("flow-progress-text").textContent =
-    `Task ${displayTaskNumber} of ${taskCount}`;
-
-
-  let percent =
-    taskCount
-      ? (completedTasks / taskCount) * 100
-      : 0;
-
-
-  document.getElementById("progress-fill").style.width =
-    `${percent}%`;
+    document.getElementById("timer-progress")
+        .style.width =
+        `${Math.max(0, percentage)}%`;
 
 }
 
 
-/* =========================
-   NEXT ITEM
-========================= */
+/* =========================================
+   FORMAT TIME
+========================================= */
 
-function updateNextFlowItem() {
+function formatTime(seconds) {
 
-  let next =
-    flowItems[currentFlowIndex + 1];
+    const minutes =
+        Math.floor(seconds / 60);
 
-
-  if (!next) {
-
-    document.getElementById("next-task-title").textContent =
-      "You're almost done.";
-
-    return;
-
-  }
+    const secs =
+        seconds % 60;
 
 
-  /*
-    If the current item is a task and the
-    next item is a break, show the break.
-  */
-
-  if (next.type === "break") {
-
-    document.getElementById("next-task-title").textContent =
-      `☕ Break • ${next.duration} min`;
-
-    return;
-
-  }
-
-
-  document.getElementById("next-task-title").textContent =
-    next.title;
+    return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 
 }
 
 
-/* =========================
-   PAUSE / RESUME
-========================= */
+/* =========================================
+   NEXT TASK
+========================================= */
+
+function updateNextTask() {
+
+    const next =
+        tasks[currentTaskIndex + 1];
+
+
+    const name =
+        document.getElementById("next-task-name");
+
+    const duration =
+        document.getElementById("next-task-duration");
+
+
+    if (!next) {
+
+        name.textContent = "You're on your final task";
+
+        duration.textContent = "Almost there";
+
+        return;
+
+    }
+
+
+    name.textContent = next.title;
+
+    duration.textContent =
+        `${next.duration} min`;
+
+}
+
+
+/* =========================================
+   PAUSE
+========================================= */
 
 document
-  .getElementById("pause-btn")
-  .addEventListener(
-    "click",
-    toggleTimer
-  );
+    .getElementById("pause-btn")
+    .addEventListener("click", togglePause);
 
 
-function toggleTimer() {
+function togglePause() {
 
-  isPaused =
-    !isPaused;
-
-
-  document.getElementById("pause-btn").textContent =
-    isPaused
-      ? "Resume"
-      : "Pause";
+    isPaused = !isPaused;
 
 
-  document.getElementById("timer-message").textContent =
-    isPaused
+    const button =
+        document.getElementById("pause-btn");
 
-      ? "Timer paused."
 
-      : isBreak
-        ? "Take a moment. You've earned it."
+    if (isPaused) {
 
-        : "Stay focused.";
+        button.textContent = "Resume";
+
+        document.getElementById("flow-message")
+            .textContent =
+            "Paused. Take your time.";
+
+    } else {
+
+        button.textContent = "Pause";
+
+        document.getElementById("flow-message")
+            .textContent =
+            "One thing at a time. You've got this.";
+
+    }
 
 }
 
 
-/* =========================
-   SKIP
-========================= */
+/* =========================================
+   FINISH TASK
+========================================= */
+
+function finishTask() {
+
+    clearTimers();
+
+    tasks[currentTaskIndex].completed = true;
+
+    playBeep();
+
+
+    /* If this was the final task */
+
+    if (currentTaskIndex >= tasks.length - 1) {
+
+        completeFlow();
+
+        return;
+
+    }
+
+
+    /* Otherwise start a break */
+
+    startBreak();
+
+}
+
+
+/* =========================================
+   SKIP TASK
+========================================= */
 
 document
-  .getElementById("skip-btn")
-  .addEventListener(
-    "click",
-    skipCurrentItem
-  );
+    .getElementById("skip-btn")
+    .addEventListener("click", skipTask);
 
 
-function skipCurrentItem() {
+function skipTask() {
 
-  clearInterval(timerInterval);
+    clearTimers();
 
-  currentFlowIndex++;
+    tasks[currentTaskIndex].completed = true;
 
-  startCurrentFlowItem();
+    currentTaskIndex++;
+
+    playBeep();
+
+
+    if (currentTaskIndex >= tasks.length) {
+
+        completeFlow();
+
+        return;
+
+    }
+
+
+    startBreak();
 
 }
 
 
-/* =========================
-   END TASK
-========================= */
+/* =========================================
+   END CURRENT TASK
+========================================= */
 
 document
-  .getElementById("end-task-btn")
-  .addEventListener(
-    "click",
-    endCurrentItem
-  );
+    .getElementById("end-btn")
+    .addEventListener("click", endFlow);
 
 
-function endCurrentItem() {
+function endFlow() {
 
-  clearInterval(timerInterval);
+    clearTimers();
 
-
-  document.getElementById("timer-message").textContent =
-    isBreak
-      ? "Break ended."
-      : "Task ended. Moving on...";
-
-
-  setTimeout(() => {
-
-    currentFlowIndex++;
-
-    startCurrentFlowItem();
-
-  }, 1000);
+    completeFlow();
 
 }
 
 
-/* =========================
-   TIMER FINISHED
-========================= */
+/* =========================================
+   BREAK SYSTEM
+========================================= */
 
-function completeCurrentFlowItem() {
+function startBreak() {
 
-  playBeep();
+    clearTimers();
 
+    isPaused = false;
 
-  document.getElementById("timer-message").textContent =
-    isBreak
-
-      ? "Break over. Let's get back to it!"
-
-      : "Task complete!";
+    showScreen("break");
 
 
-  /*
-    Automatically move to the next item.
-    This means:
+    const next =
+        tasks[currentTaskIndex + 1];
 
-    TASK → BREAK → TASK → BREAK → TASK
 
-    until the final task is complete.
-  */
+    document.getElementById("break-status")
+        .textContent =
+        `BREAK · ${currentTaskIndex + 1} OF ${tasks.length}`;
 
-  setTimeout(() => {
 
-    currentFlowIndex++;
+    if (next) {
 
-    startCurrentFlowItem();
+        document.getElementById("break-next-task")
+            .textContent =
+            next.title;
 
-  }, 1800);
+        document.getElementById("break-next-duration")
+            .textContent =
+            `${next.duration} min`;
+
+    } else {
+
+        document.getElementById("break-next-task")
+            .textContent =
+            "Flow complete";
+
+        document.getElementById("break-next-duration")
+            .textContent =
+            "You're almost done";
+
+    }
+
+
+    /* Default break = 5 minutes */
+
+    breakTotalSeconds = 5 * 60;
+
+    breakTimeRemaining = breakTotalSeconds;
+
+
+    updateBreakDisplay();
+
+
+    breakInterval = setInterval(() => {
+
+        breakTimeRemaining--;
+
+        updateBreakDisplay();
+
+
+        if (breakTimeRemaining <= 0) {
+
+            finishBreak();
+
+        }
+
+    }, 1000);
 
 }
 
 
-/* =========================
-   AUDIO / BEEP
-========================= */
+/* =========================================
+   BREAK TIMER DISPLAY
+========================================= */
 
-function initializeAudio() {
+function updateBreakDisplay() {
 
-  if (!audioContext) {
-
-    audioContext =
-      new (
-        window.AudioContext ||
-        window.webkitAudioContext
-      )();
-
-  }
+    document.getElementById("break-timer")
+        .textContent =
+        formatTime(breakTimeRemaining);
 
 
-  if (
-    audioContext.state ===
-    "suspended"
-  ) {
+    const percentage =
+        (breakTimeRemaining / breakTotalSeconds) * 100;
 
-    audioContext.resume();
 
-  }
+    document.getElementById("break-progress")
+        .style.width =
+        `${Math.max(0, percentage)}%`;
+
+
+    if (breakTimeRemaining <= 60) {
+
+        document.getElementById("break-message")
+            .textContent =
+            "Almost time. Get ready for the next one.";
+
+    } else if (breakTimeRemaining <= 180) {
+
+        document.getElementById("break-message")
+            .textContent =
+            "Relax your shoulders. Take a deep breath.";
+
+    }
 
 }
 
+
+/* =========================================
+   FINISH BREAK
+========================================= */
+
+function finishBreak() {
+
+    clearTimers();
+
+    playBeep();
+
+    currentTaskIndex++;
+
+    startTask();
+
+}
+
+
+/* =========================================
+   SKIP BREAK
+========================================= */
+
+document
+    .getElementById("skip-break-btn")
+    .addEventListener("click", skipBreak);
+
+
+function skipBreak() {
+
+    clearTimers();
+
+    currentTaskIndex++;
+
+    startTask();
+
+}
+
+
+/* =========================================
+   END FLOW FROM BREAK
+========================================= */
+
+document
+    .getElementById("end-flow-btn")
+    .addEventListener("click", endFlow);
+
+
+/* =========================================
+   COMPLETE FLOW
+========================================= */
+
+function completeFlow() {
+
+    clearTimers();
+
+    showScreen("complete");
+
+}
+
+
+/* =========================================
+   NEW BRAIN DUMP
+========================================= */
+
+document
+    .getElementById("new-dump-btn")
+    .addEventListener("click", newDump);
+
+
+document
+    .getElementById("restart-btn")
+    .addEventListener("click", newDump);
+
+
+function newDump() {
+
+    clearTimers();
+
+    tasks = [];
+
+    currentTaskIndex = 0;
+
+    isPaused = false;
+
+
+    document.getElementById("brain-dump")
+        .value = "";
+
+
+    document.getElementById("pause-btn")
+        .textContent = "Pause";
+
+
+    showScreen("home");
+
+}
+
+
+/* =========================================
+   CLEAR TIMERS
+========================================= */
+
+function clearTimers() {
+
+    if (timerInterval) {
+
+        clearInterval(timerInterval);
+
+        timerInterval = null;
+
+    }
+
+
+    if (breakInterval) {
+
+        clearInterval(breakInterval);
+
+        breakInterval = null;
+
+    }
+
+}
+
+
+/* =========================================
+   SOUND
+========================================= */
 
 function playBeep() {
 
-  if (!audioContext) return;
+    try {
 
+        const AudioContext =
+            window.AudioContext ||
+            window.webkitAudioContext;
 
-  const frequencies = [
-    880,
-    880,
-    1046
-  ];
 
+        const context =
+            new AudioContext();
 
-  frequencies.forEach(
-    (frequency, index) => {
 
-      const oscillator =
-        audioContext.createOscillator();
-
-
-      const gain =
-        audioContext.createGain();
-
-
-      oscillator.frequency.value =
-        frequency;
-
-
-      oscillator.type =
-        "sine";
-
-
-      oscillator.connect(gain);
-
-      gain.connect(
-        audioContext.destination
-      );
-
-
-      const start =
-        audioContext.currentTime +
-        index * 0.18;
-
-
-      gain.gain.setValueAtTime(
-        0.001,
-        start
-      );
-
-
-      gain.gain.exponentialRampToValueAtTime(
-        0.3,
-        start + 0.02
-      );
-
-
-      gain.gain.exponentialRampToValueAtTime(
-        0.001,
-        start + 0.14
-      );
-
-
-      oscillator.start(start);
-
-      oscillator.stop(
-        start + 0.15
-      );
-
-    }
-  );
-
-}
-
-
-/* =========================
-   COMPLETE FLOW
-========================= */
-
-function finishFlow() {
-
-  clearInterval(timerInterval);
-
-
-  document.getElementById("progress-fill").style.width =
-    "100%";
-
-
-  document.getElementById("flow-progress-text").textContent =
-    `Task ${tasks.length} of ${tasks.length}`;
-
-
-  document.getElementById("completion-message").textContent =
-    "You turned mental clutter into progress. Take a breath — you've earned it.";
-
-
-  showScreen("complete-screen");
-
-}
-
-
-/* =========================
-   SECURITY HELPER
-========================= */
-
-function escapeHTML(value) {
-
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-
-}
-
-
-/* =========================
-   RESET PROCESSING STATE
-========================= */
-
-function resetProcessingSteps() {
-
-  [
-    "step-1",
-    "step-2",
-    "step-3",
-    "step-4"
-  ].forEach(id => {
-
-    document
-      .getElementById(id)
-      .classList.remove("done");
-
-  });
-
-}
-
-
-/* =========================
-   RESTART
-========================= */
-
-document
-  .getElementById("restart-btn")
-  .addEventListener(
-    "click",
-    restartMindDump
-  );
-
-
-function restartMindDump() {
-
-  clearInterval(timerInterval);
-
-
-  tasks = [];
-
-  flowItems = [];
-
-  currentFlowIndex = 0;
-
-  currentTaskIndex = 0;
-
-  remainingSeconds = 0;
-
-  totalSeconds = 0;
-
-  isPaused = false;
-
-  isBreak = false;
-
-
-  document.getElementById("brain-dump").value = "";
-
-
-  document.getElementById("timer").textContent =
-    "00:00";
-
-
-  document.getElementById("progress-fill").style.width =
-    "0%";
-
-
-  resetProcessingSteps();
-
-
-  showScreen("home-screen");
-
-}
-```
+        const oscillator =
+            context
