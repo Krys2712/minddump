@@ -1,1473 +1,1161 @@
-/* =========================================
-   MINDDUMP
-   Dump it. Plan it. Do it.
-========================================= */
-
-
-// =========================================
-// APP STATE
-// =========================================
-
 let tasks = [];
 
 let currentTaskIndex = 0;
-
 let timerInterval = null;
 
 let remainingSeconds = 0;
-
 let totalSeconds = 0;
 
 let isPaused = false;
-
 let audioContext = null;
 
+let breakDuration = 10;
+let startTime = "09:00";
 
-// =========================================
-// EXAMPLES
-// =========================================
+let flowItems = [];
+let currentFlowIndex = 0;
+
+let isBreak = false;
+
+
+/* =========================
+   EXAMPLES
+========================= */
 
 const examples = {
 
-    school:
-        "I have a Computer Science assignment due tomorrow, I need to study for my networking test on Friday, finish my portfolio project this week, submit my class notes and email my lecturer tonight.",
+  school:
+    "I have a computer science assignment due tomorrow, study for my networking test on Friday, finish my portfolio project this week and start learning Python.",
 
-    work:
-        "I need to reply to important messages, finish the report, prepare for tomorrow's meeting, organize my work files and call my colleague tonight.",
+  work:
+    "Finish the report by tomorrow, reply to the team email, prepare for Monday's meeting, organize my files and send the client update.",
 
-    life:
-        "I need to buy groceries, clean my room, do laundry, call Mum tonight, book an appointment and organize my wardrobe.",
+  life:
+    "Buy groceries, clean my room, call Mum tonight, reply to Sarah, do laundry and plan my weekend.",
 
-    everything:
-        "I have a Computer Science assignment due tomorrow, I need to study for my networking test on Friday, finish my portfolio project this week, reply to Sarah, buy groceries, clean my room, call Mum tonight and start learning Python."
+  everything:
+    "I have a computer science assignment due tomorrow, I need to study for my networking test on Friday, finish my portfolio project this week, reply to Sarah, buy groceries, clean my room, call Mum tonight and start learning Python."
 };
 
 
-// =========================================
-// ELEMENTS
-// =========================================
-
-const brainDump =
-    document.getElementById("brain-dump");
-
-const organizeBtn =
-    document.getElementById("organize-btn");
-
-
-// =========================================
-// EXAMPLE BUTTONS
-// =========================================
-
-document
-    .querySelectorAll(".example-btn")
-    .forEach(button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                const type =
-                    button.dataset.example;
-
-                brainDump.value =
-                    examples[type] || "";
-
-                brainDump.focus();
-
-            }
-        );
-
-    });
-
-
-// =========================================
-// SCREEN CONTROL
-// =========================================
+/* =========================
+   SCREEN CONTROL
+========================= */
 
 function showScreen(id) {
 
-    document
-        .querySelectorAll(".screen")
-        .forEach(screen => {
+  document.querySelectorAll(".screen").forEach(screen => {
+    screen.classList.remove("active");
+  });
 
-            screen.classList.remove("active");
+  document.getElementById(id).classList.add("active");
 
-        });
-
-
-    const target =
-        document.getElementById(id);
-
-
-    if (target) {
-        target.classList.add("active");
-    }
-
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
+  window.scrollTo(0, 0);
 }
 
 
-// =========================================
-// ORGANIZE
-// =========================================
+/* =========================
+   EXAMPLE BUTTONS
+========================= */
 
-organizeBtn.addEventListener(
-    "click",
-    organizeThoughts
-);
+document.querySelectorAll(".example-btn").forEach(button => {
+
+  button.addEventListener("click", () => {
+
+    const type = button.dataset.example;
+
+    document.getElementById("brain-dump").value = examples[type];
+
+  });
+
+});
+
+
+/* =========================
+   ORGANIZE
+========================= */
+
+document
+  .getElementById("organize-btn")
+  .addEventListener("click", organizeThoughts);
 
 
 function organizeThoughts() {
 
-    const text =
-        brainDump.value.trim();
+  const input = document
+    .getElementById("brain-dump")
+    .value
+    .trim();
 
+  if (!input) {
 
-    if (!text) {
+    alert("Dump something first — your brain deserves the unload.");
 
-        alert(
-            "Dump something first — your mind is safe here."
-        );
+    return;
+  }
 
-        brainDump.focus();
+  tasks = extractTasks(input);
 
-        return;
-    }
+  if (!tasks.length) {
 
+    alert("I couldn't identify any tasks. Try adding a few things you need to do.");
 
-    tasks =
-        extractTasks(text);
+    return;
+  }
 
+  showScreen("processing-screen");
 
-    if (!tasks.length) {
+  runProcessing();
 
-        alert(
-            "I couldn't find any tasks. Try describing a few things you need to do."
-        );
-
-        return;
-    }
-
-
-    showScreen(
-        "processing-screen"
-    );
-
-
-    runProcessingAnimation();
 }
 
 
-// =========================================
-// PROCESSING ANIMATION
-// =========================================
+/* =========================
+   PROCESSING ANIMATION
+========================= */
 
-function runProcessingAnimation() {
+function runProcessing() {
 
-    const messages = [
-        "Reading your thoughts...",
-        "Identifying tasks...",
-        "Detecting priorities...",
-        "Estimating time...",
-        "Building your plan..."
-    ];
+  const steps = [
+    "step-1",
+    "step-2",
+    "step-3",
+    "step-4"
+  ];
 
+  const messages = [
+    "Reading your thoughts...",
+    "Finding what needs to be done...",
+    "Figuring out what matters most...",
+    "Building your personal plan..."
+  ];
 
-    const message =
-        document.getElementById(
-            "processing-message"
-        );
+  let index = 0;
 
+  const interval = setInterval(() => {
 
-    let index = 0;
+    if (index > 0) {
 
+      document
+        .getElementById(steps[index - 1])
+        .classList.add("done");
 
-    message.textContent =
-        messages[0];
+    }
 
+    document.getElementById("processing-text").textContent =
+      messages[index];
 
-    const interval =
-        setInterval(() => {
+    index++;
 
-            index++;
+    if (index === steps.length) {
 
+      clearInterval(interval);
 
-            if (index < messages.length) {
+      document
+        .getElementById(steps[3])
+        .classList.add("done");
 
-                message.textContent =
-                    messages[index];
-
-            }
-
-        }, 500);
-
-
-    setTimeout(() => {
-
-        clearInterval(interval);
+      setTimeout(() => {
 
         renderDashboard();
 
-        showScreen(
-            "dashboard-screen"
-        );
+        showScreen("dashboard-screen");
 
-    }, 2800);
+      }, 700);
+
+    }
+
+  }, 650);
+
 }
 
 
-// =========================================
-// TASK EXTRACTION
-// =========================================
+/* =========================
+   TASK EXTRACTION
+========================= */
 
 function extractTasks(text) {
 
-    let normalized =
-        text
-
-            .replace(/\n+/g, ",")
-            .replace(/[•;]/g, ",")
-            .replace(/\s+/g, " ")
-            .trim();
+  let cleaned = text
+    .replace(/\n+/g, ",")
+    .replace(/[•●]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 
 
-    /*
-       Detect natural task boundaries.
-    */
-
-    normalized =
-        normalized.replace(
-            /\s+and\s+(?=(?:I\s+)?(?:need|have|want|should|must|finish|study|buy|call|reply|clean|do|submit|prepare|organize|book|learn|start|send|write|complete|practice|email))/gi,
-            ","
-        );
+  cleaned = cleaned.replace(
+    /\s+(?:and\s+)?(?=(?:start|finish|complete|reply|respond|buy|clean|call|study|learn|send|prepare|submit|do|work|organize|plan)\b)/gi,
+    ", "
+  );
 
 
-    let parts =
-        normalized
-            .split(/,\s*|\.\s+/)
-            .map(item => item.trim())
-            .filter(
-                item => item.length > 3
-            );
+  let pieces = cleaned
+    .split(/[,;]+/)
+    .map(item => item.trim())
+    .filter(Boolean);
 
 
-    const uniqueTasks = [];
+  pieces = pieces.flatMap(piece => {
 
-
-    parts.forEach(part => {
-
-        const cleaned =
-            cleanTask(part);
-
-
-        if (
-            cleaned.length > 3 &&
-            !uniqueTasks.some(
-                existing =>
-                    existing.toLowerCase() ===
-                    cleaned.toLowerCase()
-            )
-        ) {
-
-            uniqueTasks.push(cleaned);
-
-        }
-
-    });
-
-
-    return uniqueTasks.map(
-        (title, index) => {
-
-            const lower =
-                title.toLowerCase();
-
-
-            return {
-
-                id: index + 1,
-
-                title,
-
-                priority:
-                    detectPriority(lower),
-
-                duration:
-                    estimateDuration(lower),
-
-                category:
-                    detectCategory(lower),
-
-                completed: false
-
-            };
-
-        }
+    const split = piece.split(
+      /\s+(?=and\s+(?:start|finish|complete|reply|respond|buy|clean|call|study|learn|send|prepare|submit|do|work|organize|plan)\b)/i
     );
+
+    return split.map(item =>
+      item.replace(/^and\s+/i, "").trim()
+    );
+
+  });
+
+
+  return pieces
+    .map(title => {
+
+      title = title.replace(/^[\s,.-]+/, "");
+
+      if (!title) return null;
+
+      return {
+
+        title:
+          title.charAt(0).toUpperCase() +
+          title.slice(1),
+
+        priority: detectPriority(title),
+
+        category: detectCategory(title),
+
+        duration: estimateDuration(title),
+
+        completed: false
+
+      };
+
+    })
+    .filter(Boolean);
+
 }
 
 
-// =========================================
-// CLEAN TASK
-// =========================================
-
-function cleanTask(text) {
-
-    return text
-
-        .replace(
-            /^(i\s+)?(need to|have to|want to|should|must|i need|i have)\s+/i,
-            ""
-        )
-
-        .replace(
-            /^(and|also)\s+/i,
-            ""
-        )
-
-        .replace(
-            /^[,\s]+|[.!?]+$/g,
-            ""
-        )
-
-        .trim()
-
-        .replace(
-            /^./,
-            char =>
-                char.toUpperCase()
-        );
-}
-
-
-// =========================================
-// PRIORITY
-// =========================================
+/* =========================
+   PRIORITY
+========================= */
 
 function detectPriority(text) {
 
-    const highKeywords = [
-        "tomorrow",
-        "today",
-        "tonight",
-        "urgent",
-        "asap",
-        "deadline",
-        "due",
-        "immediately",
-        "submit",
-        "exam",
-        "test"
-    ];
+  const highKeywords = [
+    "tomorrow",
+    "today",
+    "tonight",
+    "urgent",
+    "asap",
+    "deadline",
+    "due",
+    "immediately",
+    "submit",
+    "exam",
+    "test"
+  ];
 
+  const mediumKeywords = [
+    "this week",
+    "assignment",
+    "project",
+    "report",
+    "presentation",
+    "meeting",
+    "study",
+    "portfolio",
+    "prepare",
+    "important"
+  ];
 
-    const mediumKeywords = [
-        "this week",
-        "assignment",
-        "project",
-        "report",
-        "presentation",
-        "meeting",
-        "study",
-        "portfolio",
-        "prepare",
-        "important"
-    ];
+  const lower = text.toLowerCase();
 
+  if (highKeywords.some(word => lower.includes(word))) {
+    return "high";
+  }
 
-    if (
-        highKeywords.some(
-            word => text.includes(word)
-        )
-    ) {
+  if (mediumKeywords.some(word => lower.includes(word))) {
+    return "medium";
+  }
 
-        return "high";
+  return "low";
 
-    }
-
-
-    if (
-        mediumKeywords.some(
-            word => text.includes(word)
-        )
-    ) {
-
-        return "medium";
-
-    }
-
-
-    return "low";
 }
 
 
-// =========================================
-// CATEGORY
-// =========================================
+/* =========================
+   CATEGORY
+========================= */
 
 function detectCategory(text) {
 
-    if (
-        text.includes("assignment") ||
-        text.includes("study") ||
-        text.includes("exam") ||
-        text.includes("test") ||
-        text.includes("school") ||
-        text.includes("class") ||
-        text.includes("python") ||
-        text.includes("portfolio") ||
-        text.includes("lecturer")
-    ) {
+  const lower = text.toLowerCase();
 
-        return "School";
+  if (
+    /assignment|school|class|study|exam|test|portfolio|python|networking|computer science|learn/.test(lower)
+  ) {
+    return "School";
+  }
 
-    }
+  if (
+    /work|meeting|client|report|office|team|project/.test(lower)
+  ) {
+    return "Work";
+  }
 
+  if (
+    /groceries|clean|laundry|mum|room|call|reply|weekend/.test(lower)
+  ) {
+    return "Life";
+  }
 
-    if (
-        text.includes("meeting") ||
-        text.includes("report") ||
-        text.includes("work") ||
-        text.includes("colleague") ||
-        text.includes("client")
-    ) {
+  return "Personal";
 
-        return "Work";
-
-    }
-
-
-    if (
-        text.includes("call") ||
-        text.includes("mum") ||
-        text.includes("groceries") ||
-        text.includes("laundry") ||
-        text.includes("clean") ||
-        text.includes("appointment")
-    ) {
-
-        return "Life";
-
-    }
-
-
-    return "Personal";
 }
 
 
-// =========================================
-// TIME ESTIMATION
-// =========================================
+/* =========================
+   DURATION ESTIMATION
+========================= */
 
 function estimateDuration(text) {
 
-    if (
-        text.includes("assignment") ||
-        text.includes("project") ||
-        text.includes("portfolio") ||
-        text.includes("report") ||
-        text.includes("presentation")
-    ) {
+  const lower = text.toLowerCase();
 
-        return 60;
+  if (
+    /assignment|project|portfolio|report|presentation/.test(lower)
+  ) {
+    return 60;
+  }
 
-    }
+  if (
+    /study|exam|test|learn|learning/.test(lower)
+  ) {
+    return 45;
+  }
 
+  if (
+    /clean|groceries|laundry|organize/.test(lower)
+  ) {
+    return 30;
+  }
 
-    if (
-        text.includes("study") ||
-        text.includes("exam") ||
-        text.includes("test") ||
-        text.includes("learn")
-    ) {
+  if (
+    /call|reply|message|email|send/.test(lower)
+  ) {
+    return 10;
+  }
 
-        return 45;
+  return 20;
 
-    }
-
-
-    if (
-        text.includes("clean") ||
-        text.includes("groceries") ||
-        text.includes("laundry") ||
-        text.includes("organize")
-    ) {
-
-        return 30;
-
-    }
-
-
-    if (
-        text.includes("call") ||
-        text.includes("reply") ||
-        text.includes("message") ||
-        text.includes("email") ||
-        text.includes("send")
-    ) {
-
-        return 10;
-
-    }
-
-
-    return 20;
 }
 
 
-// =========================================
-// DASHBOARD
-// =========================================
+/* =========================
+   DASHBOARD
+========================= */
 
 function renderDashboard() {
 
-    const high =
-        tasks.filter(
-            task =>
-                task.priority === "high"
-        );
+  const totalMinutes = tasks.reduce(
+    (sum, task) => sum + task.duration,
+    0
+  );
+
+  const urgent = tasks.filter(
+    task => task.priority === "high"
+  ).length;
 
 
-    const medium =
-        tasks.filter(
-            task =>
-                task.priority === "medium"
-        );
+  document.getElementById("total-tasks").textContent =
+    tasks.length;
 
 
-    const low =
-        tasks.filter(
-            task =>
-                task.priority === "low"
-        );
+  document.getElementById("total-time").textContent =
+    formatTotalTime(totalMinutes);
 
 
-    const totalTime =
-        tasks.reduce(
-            (total, task) =>
-                total + task.duration,
-            0
-        );
+  document.getElementById("urgent-tasks").textContent =
+    urgent;
 
 
-    document.getElementById(
-        "total-tasks"
-    ).textContent =
-        tasks.length;
+  const brainLoad = Math.min(
+    100,
+    Math.round((totalMinutes / 360) * 100)
+  );
+
+  document.getElementById("brain-load-value").textContent =
+    `${brainLoad}%`;
 
 
-    document.getElementById(
-        "urgent-tasks"
-    ).textContent =
-        high.length;
+  renderTaskGroup("high");
+  renderTaskGroup("medium");
+  renderTaskGroup("low");
 
 
-    document.getElementById(
-        "total-time"
-    ).textContent =
-        formatMinutes(totalTime);
+  updatePlan();
 
-
-    /*
-       Calculate brain load.
-    */
-
-    const score =
-        Math.min(
-            98,
-            Math.max(
-                20,
-                35 +
-                tasks.length * 7 +
-                high.length * 8
-            )
-        );
-
-
-    document.getElementById(
-        "brain-load-score"
-    ).textContent =
-        `${score}%`;
-
-
-    document.getElementById(
-        "brain-load-progress"
-    ).style.width =
-        `${score}%`;
-
-
-    document.getElementById(
-        "summary"
-    ).textContent =
-        generateSummary(
-            tasks.length,
-            high.length
-        );
-
-
-    renderTaskList(
-        "high-tasks",
-        high
-    );
-
-
-    renderTaskList(
-        "medium-tasks",
-        medium
-    );
-
-
-    renderTaskList(
-        "low-tasks",
-        low
-    );
-
-
-    renderPlan();
 }
 
 
-// =========================================
-// SUMMARY
-// =========================================
+function formatTotalTime(minutes) {
 
-function generateSummary(
-    total,
-    urgent
-) {
+  const hours = Math.floor(minutes / 60);
 
-    if (urgent >= 3) {
+  const mins = minutes % 60;
 
-        return `You have ${total} things competing for your attention. We've pulled the urgent ones forward.`;
+  if (hours && mins) {
+    return `${hours}h ${mins}m`;
+  }
 
-    }
+  if (hours) {
+    return `${hours}h`;
+  }
 
+  return `${mins}m`;
 
-    if (urgent > 0) {
-
-        return `You have ${total} tasks on your mind. We've identified what deserves your attention first.`;
-
-    }
-
-
-    return `Your thoughts are out of your head and into a clear plan.`;
 }
 
 
-// =========================================
-// TASK CARDS
-// =========================================
+/* =========================
+   TASK GROUPS
+========================= */
 
-function renderTaskList(
-    containerId,
-    taskList
-) {
+function renderTaskGroup(priority) {
 
-    const container =
-        document.getElementById(
-            containerId
-        );
+  const container = document.getElementById(
+    `${priority}-tasks`
+  );
+
+  container.innerHTML = "";
 
 
-    container.innerHTML = "";
+  const matchingTasks = tasks.filter(
+    task => task.priority === priority
+  );
 
 
-    if (!taskList.length) {
+  if (!matchingTasks.length) {
 
-        container.innerHTML = `
-            <div class="task-item">
-                Nothing here 🎉
-            </div>
-        `;
+    container.innerHTML =
+      `<p style="color:#969c95;font-size:13px;">No tasks here.</p>`;
 
-        return;
-    }
+    return;
+  }
 
 
-    taskList.forEach(task => {
+  matchingTasks.forEach(task => {
 
-        const item =
-            document.createElement("div");
+    const item = document.createElement("div");
+
+    item.className = "task-item";
+
+    item.innerHTML = `
+
+      <strong>${escapeHTML(task.title)}</strong>
+
+      <div class="task-meta">
+
+        <span>${task.category}</span>
+
+        <span>${task.duration} min</span>
+
+      </div>
+
+    `;
+
+    container.appendChild(item);
+
+  });
+
+}
 
 
-        item.className =
-            "task-item";
+/* =========================
+   PLAN SETTINGS
+========================= */
+
+document
+  .getElementById("break-duration")
+  .addEventListener("change", updatePlan);
 
 
-        item.innerHTML = `
-
-            <div>
-                ${task.title}
-            </div>
-
-            <div class="task-duration">
-                ${task.duration} min · ${task.category}
-            </div>
-
-        `;
+document
+  .getElementById("start-time")
+  .addEventListener("change", updatePlan);
 
 
-        container.appendChild(item);
+function updatePlan() {
+
+  breakDuration = Number(
+    document.getElementById("break-duration").value
+  );
+
+  startTime =
+    document.getElementById("start-time").value || "09:00";
+
+
+  buildFlowItems();
+
+  renderPlan();
+
+}
+
+
+/* =========================
+   BUILD FLOW
+========================= */
+
+function buildFlowItems() {
+
+  const sortedTasks = [...tasks].sort(
+    (a, b) =>
+      priorityValue(a.priority) -
+      priorityValue(b.priority)
+  );
+
+
+  flowItems = [];
+
+
+  sortedTasks.forEach((task, index) => {
+
+    flowItems.push({
+
+      type: "task",
+
+      title: task.title,
+
+      category: task.category,
+
+      duration: task.duration,
+
+      taskReference: task
 
     });
+
+
+    if (
+      breakDuration > 0 &&
+      index < sortedTasks.length - 1
+    ) {
+
+      flowItems.push({
+
+        type: "break",
+
+        title: "Take a break",
+
+        category: "BREAK",
+
+        duration: breakDuration,
+
+        taskReference: null
+
+      });
+
+    }
+
+  });
+
 }
 
 
-// =========================================
-// AUTO PLAN
-// =========================================
+function priorityValue(priority) {
+
+  if (priority === "high") return 1;
+
+  if (priority === "medium") return 2;
+
+  return 3;
+
+}
+
+
+/* =========================
+   RENDER AUTO PLAN
+========================= */
 
 function renderPlan() {
 
-    const planList =
-        document.getElementById(
-            "plan-list"
-        );
+  const container =
+    document.getElementById("mindflow-plan");
+
+  container.innerHTML = "";
 
 
-    planList.innerHTML = "";
+  const startMinutes = timeToMinutes(startTime);
+
+  let currentMinutes = startMinutes;
 
 
-    const priorityOrder = {
-        high: 1,
-        medium: 2,
-        low: 3
-    };
+  flowItems.forEach(item => {
+
+    const row = document.createElement("div");
+
+    row.className =
+      `plan-item ${item.type === "break" ? "break-item" : ""}`;
 
 
-    const plannedTasks =
-        [...tasks].sort(
-            (a, b) =>
-                priorityOrder[a.priority] -
-                priorityOrder[b.priority]
-        );
+    const timeLabel =
+      formatTime(currentMinutes);
 
 
-    let currentMinutes =
-        16 * 60;
+    row.innerHTML = `
+
+      <div class="plan-time">
+        ${timeLabel}
+      </div>
+
+      <div>
+
+        <strong>
+          ${item.type === "break" ? "☕ " : ""}
+          ${escapeHTML(item.title)}
+        </strong>
+
+        <small>
+          ${item.type === "break"
+            ? "Rest and recharge"
+            : item.category}
+        </small>
+
+      </div>
+
+      <div class="plan-duration">
+        ${item.duration} min
+      </div>
+
+    `;
 
 
-    plannedTasks.forEach(task => {
-
-        const item =
-            document.createElement("div");
+    container.appendChild(row);
 
 
-        item.className =
-            "plan-item";
+    currentMinutes += item.duration;
+
+  });
 
 
-        item.innerHTML = `
-
-            <div class="plan-time">
-                ${formatClock(currentMinutes)}
-            </div>
-
-            <div>
-
-                <div class="plan-task">
-                    ${task.title}
-                </div>
-
-                <div class="plan-duration">
-                    ${task.duration} min ·
-                    ${capitalize(task.priority)}
-                </div>
-
-            </div>
-
-        `;
+  document.getElementById("plan-start-label").textContent =
+    `Starting at ${formatTime(startMinutes)}`;
 
 
-        planList.appendChild(item);
+  document.getElementById("break-label").textContent =
+    breakDuration === 0
+      ? "No breaks"
+      : `${breakDuration} min breaks`;
 
-
-        currentMinutes +=
-            task.duration + 5;
-
-    });
 }
 
 
-// =========================================
-// FORMAT CLOCK
-// =========================================
+/* =========================
+   TIME HELPERS
+========================= */
 
-function formatClock(minutes) {
+function timeToMinutes(time) {
 
-    const hours =
-        Math.floor(minutes / 60);
+  const [hours, minutes] =
+    time.split(":").map(Number);
 
+  return hours * 60 + minutes;
 
-    const mins =
-        minutes % 60;
-
-
-    const suffix =
-        hours >= 12
-            ? "PM"
-            : "AM";
-
-
-    let hour =
-        hours % 12;
-
-
-    if (hour === 0) {
-        hour = 12;
-    }
-
-
-    return `${hour}:${String(mins).padStart(2, "0")} ${suffix}`;
 }
 
 
-// =========================================
-// FORMAT MINUTES
-// =========================================
+function formatTime(totalMinutes) {
 
-function formatMinutes(minutes) {
+  totalMinutes = totalMinutes % (24 * 60);
 
-    if (minutes < 60) {
-        return `${minutes}m`;
-    }
+  let hours = Math.floor(totalMinutes / 60);
 
+  const minutes = totalMinutes % 60;
 
-    const hours =
-        Math.floor(minutes / 60);
+  const period = hours >= 12 ? "PM" : "AM";
 
+  hours = hours % 12;
 
-    const mins =
-        minutes % 60;
+  if (hours === 0) hours = 12;
 
+  return `${hours}:${String(minutes).padStart(2, "0")} ${period}`;
 
-    if (mins === 0) {
-        return `${hours}h`;
-    }
-
-
-    return `${hours}h ${mins}m`;
 }
 
 
-// =========================================
-// START MINDFLOW
-// =========================================
+/* =========================
+   START MINDFLOW
+========================= */
 
-document.getElementById(
-    "start-flow-btn"
-).addEventListener(
-    "click",
-    startFlow
-);
+document
+  .getElementById("start-flow-btn")
+  .addEventListener("click", startFlow);
 
 
 function startFlow() {
 
-    if (!tasks.length) {
-        return;
-    }
+  if (!flowItems.length) {
+
+    buildFlowItems();
+
+  }
 
 
-    currentTaskIndex = 0;
-
-    isPaused = false;
+  initializeAudio();
 
 
-    initializeAudio();
+  currentFlowIndex = 0;
+
+  currentTaskIndex = 0;
 
 
-    showScreen(
-        "flow-screen"
-    );
+  showScreen("flow-screen");
 
+  startCurrentFlowItem();
 
-    startCurrentTask();
 }
 
 
-// =========================================
-// AUDIO INITIALIZATION
-// =========================================
+/* =========================
+   START CURRENT ITEM
+========================= */
 
-function initializeAudio() {
+function startCurrentFlowItem() {
 
-    try {
+  clearInterval(timerInterval);
 
-        const AudioContext =
-            window.AudioContext ||
-            window.webkitAudioContext;
+  isPaused = false;
 
 
-        if (!AudioContext) {
-            return;
-        }
+  const item =
+    flowItems[currentFlowIndex];
 
 
-        if (!audioContext) {
+  if (!item) {
 
-            audioContext =
-                new AudioContext();
+    finishFlow();
 
-        }
+    return;
 
-
-        if (
-            audioContext.state ===
-            "suspended"
-        ) {
-
-            audioContext.resume();
-
-        }
-
-    } catch (error) {
-
-        console.log(
-            "Audio unavailable."
-        );
-
-    }
-}
+  }
 
 
-// =========================================
-// START CURRENT TASK
-// =========================================
-
-function startCurrentTask() {
-
-    clearInterval(
-        timerInterval
-    );
+  isBreak =
+    item.type === "break";
 
 
-    const task =
-        tasks[currentTaskIndex];
+  totalSeconds =
+    item.duration * 60;
 
 
-    if (!task) {
-
-        finishFlow();
-
-        return;
-    }
+  remainingSeconds =
+    totalSeconds;
 
 
-    /*
-       ONLY THE CURRENT TASK
-       appears on the timer screen.
-    */
-
-    document.getElementById(
-        "flow-task"
-    ).textContent =
-        task.title;
+  document.getElementById("flow-task").textContent =
+    item.title;
 
 
-    document.getElementById(
-        "focus-status"
-    ).textContent =
-        `Task ${currentTaskIndex + 1} of ${tasks.length}`;
+  document.getElementById("flow-category").textContent =
+    isBreak
+      ? "☕ BREAK"
+      : item.category.toUpperCase();
 
 
-    document.getElementById(
-        "flow-message"
-    ).textContent =
-        `Focus for ${task.duration} minutes. Nothing else.`;
+  document.getElementById("flow-description").textContent =
+    isBreak
+      ? "Step away, breathe, and recharge. Your next task is waiting."
+      : "Focus on this one thing. Nothing else.";
 
 
-    /*
-       NEW TIMER FOR THIS TASK.
-    */
-
-    totalSeconds =
-        task.duration * 60;
+  document.getElementById("flow-mode-label").textContent =
+    isBreak ? "MINDFLOW • BREAK" : "MINDFLOW • FOCUS";
 
 
-    remainingSeconds =
-        totalSeconds;
+  const timer =
+    document.getElementById("timer");
+
+  timer.classList.toggle(
+    "break-mode",
+    isBreak
+  );
 
 
-    isPaused = false;
+  document.getElementById("timer-message").textContent =
+    isBreak
+      ? "Take a moment. You've earned it."
+      : "Stay focused.";
 
 
-    document.getElementById(
-        "pause-btn"
-    ).textContent =
-        "Pause";
+  updateTimerDisplay();
+
+  updateFlowProgress();
+
+  updateNextFlowItem();
 
 
-    updateTimerDisplay();
-
-    updateNextTask();
-
-
-    timerInterval =
-        setInterval(
-            updateTimer,
-            1000
-        );
-}
+  document.getElementById("pause-btn").textContent =
+    "Pause";
 
 
-// =========================================
-// TIMER ENGINE
-// =========================================
+  timerInterval = setInterval(() => {
 
-function updateTimer() {
-
-    if (isPaused) {
-        return;
-    }
+    if (isPaused) return;
 
 
     remainingSeconds--;
-
 
     updateTimerDisplay();
 
 
     if (remainingSeconds <= 0) {
 
-        clearInterval(
-            timerInterval
-        );
+      clearInterval(timerInterval);
 
-
-        taskFinished();
+      completeCurrentFlowItem();
 
     }
+
+  }, 1000);
+
 }
 
 
-// =========================================
-// TIMER DISPLAY
-// =========================================
+/* =========================
+   TIMER DISPLAY
+========================= */
 
 function updateTimerDisplay() {
 
-    const minutes =
-        Math.floor(
-            remainingSeconds / 60
-        );
+  const minutes =
+    Math.floor(remainingSeconds / 60);
+
+  const seconds =
+    remainingSeconds % 60;
 
 
-    const seconds =
-        remainingSeconds % 60;
+  document.getElementById("timer").textContent =
+    `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 
-
-    document.getElementById(
-        "timer"
-    ).textContent =
-        `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-
-
-    const progress =
-        totalSeconds > 0
-            ? (
-                remainingSeconds /
-                totalSeconds
-            ) * 100
-            : 0;
-
-
-    document.getElementById(
-        "timer-progress"
-    ).style.width =
-        `${progress}%`;
 }
 
 
-// =========================================
-// PAUSE / RESUME
-// =========================================
+/* =========================
+   PROGRESS
+========================= */
 
-document.getElementById(
-    "pause-btn"
-).addEventListener(
-    "click",
-    toggleTimer
-);
+function updateFlowProgress() {
+
+  const taskCount =
+    flowItems.filter(item => item.type === "task").length;
+
+
+  const completedTasks =
+    flowItems
+      .slice(0, currentFlowIndex)
+      .filter(item => item.type === "task")
+      .length;
+
+
+  const currentTaskNumber =
+    Math.min(completedTasks + 1, taskCount);
+
+
+  document.getElementById("flow-progress-text").textContent =
+    `${currentTaskNumber} of ${taskCount}`;
+
+
+  const percent =
+    taskCount
+      ? (completedTasks / taskCount) * 100
+      : 0;
+
+
+  document.getElementById("progress-fill").style.width =
+    `${percent}%`;
+
+}
+
+
+/* =========================
+   NEXT ITEM
+========================= */
+
+function updateNextFlowItem() {
+
+  const next =
+    flowItems[currentFlowIndex + 1];
+
+
+  if (!next) {
+
+    document.getElementById("next-task-title").textContent =
+      "You're almost done.";
+
+    return;
+
+  }
+
+
+  document.getElementById("next-task-title").textContent =
+    next.type === "break"
+      ? `☕ Break • ${next.duration} min`
+      : next.title;
+
+}
+
+
+/* =========================
+   PAUSE / RESUME
+========================= */
+
+document
+  .getElementById("pause-btn")
+  .addEventListener("click", toggleTimer);
 
 
 function toggleTimer() {
 
-    isPaused =
-        !isPaused;
+  isPaused = !isPaused;
 
 
-    document.getElementById(
-        "pause-btn"
-    ).textContent =
-        isPaused
-            ? "Resume"
-            : "Pause";
+  document.getElementById("pause-btn").textContent =
+    isPaused ? "Resume" : "Pause";
 
 
-    document.getElementById(
-        "flow-message"
-    ).textContent =
-        isPaused
-            ? "Flow paused."
-            : "Back to it. You've got this.";
+  document.getElementById("timer-message").textContent =
+    isPaused
+      ? "Timer paused."
+      : isBreak
+        ? "Take a moment. You've earned it."
+        : "Stay focused.";
+
 }
 
 
-// =========================================
-// SKIP TASK
-// =========================================
+/* =========================
+   SKIP
+========================= */
 
-document.getElementById(
-    "skip-btn"
-).addEventListener(
-    "click",
-    skipTask
-);
+document
+  .getElementById("skip-btn")
+  .addEventListener("click", skipCurrentItem);
 
 
-function skipTask() {
+function skipCurrentItem() {
 
-    clearInterval(
-        timerInterval
-    );
+  clearInterval(timerInterval);
 
+  currentFlowIndex++;
 
-    currentTaskIndex++;
+  startCurrentFlowItem();
 
-
-    if (
-        currentTaskIndex >=
-        tasks.length
-    ) {
-
-        finishFlow();
-
-        return;
-    }
-
-
-    startCurrentTask();
 }
 
 
-// =========================================
-// END TASK
-// =========================================
+/* =========================
+   END TASK
+========================= */
 
-document.getElementById(
-    "end-btn"
-).addEventListener(
-    "click",
-    endCurrentTask
-);
+document
+  .getElementById("end-task-btn")
+  .addEventListener("click", endCurrentItem);
 
 
-function endCurrentTask() {
+function endCurrentItem() {
 
-    clearInterval(
-        timerInterval
-    );
+  clearInterval(timerInterval);
 
-
-    tasks[currentTaskIndex]
-        .completed = true;
-
-
-    document.getElementById(
-        "flow-message"
-    ).textContent =
-        "Task ended. Moving to the next one...";
+  document.getElementById("timer-message").textContent =
+    isBreak
+      ? "Break ended."
+      : "Task ended. Moving on...";
 
 
-    setTimeout(() => {
+  setTimeout(() => {
 
-        currentTaskIndex++;
+    currentFlowIndex++;
 
+    startCurrentFlowItem();
 
-        if (
-            currentTaskIndex >=
-            tasks.length
-        ) {
+  }, 1000);
 
-            finishFlow();
-
-        } else {
-
-            startCurrentTask();
-
-        }
-
-    }, 1200);
 }
 
 
-// =========================================
-// TASK FINISHED NATURALLY
-// =========================================
+/* =========================
+   TIMER FINISHED
+========================= */
 
-function taskFinished() {
+function completeCurrentFlowItem() {
 
-    tasks[currentTaskIndex]
-        .completed = true;
-
-
-    playBeep();
+  playBeep();
 
 
-    document.getElementById(
-        "flow-message"
-    ).textContent =
-        "Time's up. Great job — moving to the next task.";
+  document.getElementById("timer-message").textContent =
+    isBreak
+      ? "Break over. Let's get back to it!"
+      : "Task complete!";
 
 
-    setTimeout(() => {
+  setTimeout(() => {
 
-        currentTaskIndex++;
+    currentFlowIndex++;
 
+    startCurrentFlowItem();
 
-        if (
-            currentTaskIndex >=
-            tasks.length
-        ) {
+  }, 1800);
 
-            finishFlow();
-
-        } else {
-
-            startCurrentTask();
-
-        }
-
-    }, 2500);
 }
 
 
-// =========================================
-// NEXT TASK
-// =========================================
+/* =========================
+   AUDIO / BEEP
+========================= */
 
-function updateNextTask() {
+function initializeAudio() {
 
-    const nextTask =
-        tasks[currentTaskIndex + 1];
+  if (!audioContext) {
 
+    audioContext =
+      new (window.AudioContext ||
+        window.webkitAudioContext)();
 
-    const name =
-        document.getElementById(
-            "next-task-name"
-        );
-
-
-    const duration =
-        document.getElementById(
-            "next-task-duration"
-        );
+  }
 
 
-    if (!nextTask) {
+  if (audioContext.state === "suspended") {
 
-        name.textContent =
-            "Final task";
+    audioContext.resume();
 
+  }
 
-        duration.textContent =
-            "You're almost there";
-
-
-        return;
-    }
-
-
-    name.textContent =
-        nextTask.title;
-
-
-    duration.textContent =
-        `${nextTask.duration} min`;
 }
 
-
-// =========================================
-// BEEP
-// =========================================
 
 function playBeep() {
 
-    try {
-
-        if (!audioContext) {
-
-            initializeAudio();
-
-        }
+  if (!audioContext) return;
 
 
-        if (!audioContext) {
-            return;
-        }
+  const frequencies = [
+    880,
+    880,
+    1046
+  ];
 
 
-        const frequencies = [
-            880,
-            880,
-            1046
-        ];
+  frequencies.forEach((frequency, index) => {
+
+    const oscillator =
+      audioContext.createOscillator();
+
+    const gain =
+      audioContext.createGain();
 
 
-        frequencies.forEach(
-            (frequency, index) => {
+    oscillator.frequency.value =
+      frequency;
 
-                const oscillator =
-                    audioContext.createOscillator();
-
-
-                const gain =
-                    audioContext.createGain();
+    oscillator.type = "sine";
 
 
-                oscillator.type =
-                    "sine";
+    oscillator.connect(gain);
+
+    gain.connect(audioContext.destination);
 
 
-                oscillator.frequency.value =
-                    frequency;
+    const start =
+      audioContext.currentTime +
+      index * 0.18;
 
 
-                oscillator.connect(gain);
+    gain.gain.setValueAtTime(
+      0.001,
+      start
+    );
 
-                gain.connect(
-                    audioContext.destination
-                );
+    gain.gain.exponentialRampToValueAtTime(
+      0.3,
+      start + 0.02
+    );
 
-
-                const startTime =
-                    audioContext.currentTime +
-                    index * 0.22;
-
-
-                gain.gain.setValueAtTime(
-                    0.0001,
-                    startTime
-                );
+    gain.gain.exponentialRampToValueAtTime(
+      0.001,
+      start + 0.14
+    );
 
 
-                gain.gain.exponentialRampToValueAtTime(
-                    0.2,
-                    startTime + 0.02
-                );
+    oscillator.start(start);
 
+    oscillator.stop(start + 0.15);
 
-                gain.gain.exponentialRampToValueAtTime(
-                    0.0001,
-                    startTime + 0.16
-                );
+  });
 
-
-                oscillator.start(
-                    startTime
-                );
-
-
-                oscillator.stop(
-                    startTime + 0.18
-                );
-
-            }
-        );
-
-    } catch (error) {
-
-        console.log(
-            "Beep unavailable."
-        );
-
-    }
 }
 
 
-// =========================================
-// COMPLETE
-// =========================================
+/* =========================
+   COMPLETE FLOW
+========================= */
 
 function finishFlow() {
 
-    clearInterval(
-        timerInterval
-    );
+  clearInterval(timerInterval);
+
+  document.getElementById("progress-fill").style.width =
+    "100%";
 
 
-    timerInterval = null;
+  document.getElementById("completion-message").textContent =
+    "You turned mental clutter into progress. Take a breath — you've earned it.";
 
 
-    showScreen(
-        "complete-screen"
-    );
+  showScreen("complete-screen");
+
 }
 
 
-// =========================================
-// RESET
-// =========================================
+/* =========================
+   RESET
+========================= */
 
-document.getElementById(
-    "new-dump-btn"
-).addEventListener(
-    "click",
-    resetApp
-);
-
-
-document.getElementById(
-    "restart-btn"
-).addEventListener(
-    "click",
-    resetApp
-);
+document
+  .getElementById("restart-btn")
+  .addEventListener("click", resetApp);
 
 
 function resetApp() {
 
-    clearInterval(
-        timerInterval
-    );
+  clearInterval(timerInterval);
 
+  tasks = [];
 
-    timerInterval = null;
+  flowItems = [];
 
+  currentFlowIndex = 0;
 
-    tasks = [];
+  currentTaskIndex = 0;
 
-    currentTaskIndex = 0;
+  document.getElementById("brain-dump").value = "";
 
-    remainingSeconds = 0;
+  showScreen("home-screen");
 
-    totalSeconds = 0;
-
-    isPaused = false;
-
-
-    brainDump.value = "";
-
-
-    showScreen(
-        "home-screen"
-    );
 }
 
 
-// =========================================
-// HELPER
-// =========================================
+/* =========================
+   SECURITY HELPER
+========================= */
 
-function capitalize(text) {
+function escapeHTML(text) {
 
-    return (
-        text.charAt(0).toUpperCase() +
-        text.slice(1)
-    );
+  const div =
+    document.createElement("div");
+
+  div.textContent = text;
+
+  return div.innerHTML;
+
 }
