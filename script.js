@@ -108,10 +108,6 @@ I really need to get some rest.
    EXAMPLE BUTTONS
 ========================================= */
 
-/* =========================================
-   EXAMPLE BUTTONS
-========================================= */
-
 document.querySelectorAll(".example-btn").forEach(button => {
 
     button.addEventListener("click", () => {
