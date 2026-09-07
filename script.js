@@ -108,23 +108,31 @@ I really need to get some rest.
    EXAMPLE BUTTONS
 ========================================= */
 
+/* =========================================
+   EXAMPLE BUTTONS
+========================================= */
+
 document.querySelectorAll(".example-btn").forEach(button => {
 
     button.addEventListener("click", () => {
 
-        const type = button.dataset.example;
-
+        const exampleType = button.dataset.example;
         const textarea = document.getElementById("brain-dump");
 
-        textarea.value = examples[type].trim();
+        if (!examples[exampleType]) return;
+
+        textarea.value = examples[exampleType].trim();
 
         textarea.focus();
+
+        textarea.setSelectionRange(
+            textarea.value.length,
+            textarea.value.length
+        );
 
     });
 
 });
-
-
 /* =========================================
    ORGANIZE THOUGHTS
 ========================================= */
