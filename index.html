@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,13 +10,17 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+    rel="stylesheet"
+  >
 
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+  <!-- NAVBAR -->
   <nav class="navbar">
     <div class="logo">MindDump</div>
     <div class="safe-text">Your mind is safe here.</div>
@@ -28,13 +33,18 @@
     <div class="hero">
       <span class="eyebrow">YOUR PERSONAL PRODUCTIVITY ASSISTANT</span>
 
-      <h1>Dump it.<br><span>Plan it.</span><br>Do it.</h1>
+      <h1>
+        Dump it.<br>
+        <span>Plan it.</span><br>
+        Do it.
+      </h1>
 
       <p>
         Empty your mind. MindDump turns your thoughts into a
         clear, prioritized plan so you know exactly what to do next.
       </p>
     </div>
+
 
     <div class="dump-card">
 
@@ -122,51 +132,68 @@
     </div>
 
 
+    <!-- TASKS -->
+
     <div class="task-sections">
 
       <div class="task-section high-section">
+
         <div class="section-title">
           <span class="priority-dot high"></span>
           High Priority
         </div>
 
         <div id="high-tasks" class="task-list"></div>
+
       </div>
 
 
       <div class="task-section medium-section">
+
         <div class="section-title">
           <span class="priority-dot medium"></span>
           Medium Priority
         </div>
 
         <div id="medium-tasks" class="task-list"></div>
+
       </div>
 
 
       <div class="task-section low-section">
+
         <div class="section-title">
           <span class="priority-dot low"></span>
           Low Priority
         </div>
 
         <div id="low-tasks" class="task-list"></div>
+
       </div>
 
     </div>
 
 
-    <!-- FLOW SETTINGS -->
+    <!-- MINDFLOW SETTINGS -->
+
     <div class="flow-settings">
 
       <div class="settings-heading">
+
         <span class="eyebrow">MINDFLOW</span>
+
         <h3>Build your focus session</h3>
-        <p>Choose when you want to start and how long you want your breaks to be.</p>
+
+        <p>
+          Choose when you want to start and how long you want your breaks to be.
+        </p>
+
       </div>
 
 
       <div class="settings-grid">
+
+        <!-- START TIME -->
 
         <div class="setting-card">
 
@@ -185,6 +212,8 @@
         </div>
 
 
+        <!-- BREAK -->
+
         <div class="setting-card">
 
           <label for="break-duration">
@@ -194,12 +223,31 @@
           <p>Breaks will be added between tasks.</p>
 
           <select id="break-duration">
-            <option value="0">No breaks</option>
-            <option value="5">5 minutes</option>
-            <option value="10" selected>10 minutes</option>
-            <option value="15">15 minutes</option>
-            <option value="20">20 minutes</option>
-            <option value="30">30 minutes</option>
+
+            <option value="0">
+              No breaks
+            </option>
+
+            <option value="5">
+              5 minutes
+            </option>
+
+            <option value="10" selected>
+              10 minutes
+            </option>
+
+            <option value="15">
+              15 minutes
+            </option>
+
+            <option value="20">
+              20 minutes
+            </option>
+
+            <option value="30">
+              30 minutes
+            </option>
+
           </select>
 
         </div>
@@ -207,23 +255,43 @@
       </div>
 
 
+      <!-- AUTO PLAN -->
+
       <div class="plan-preview">
 
         <div class="plan-header">
+
           <div>
-            <span class="eyebrow">AUTO PLAN</span>
-            <h3 id="plan-start-label">Starting at 9:00 AM</h3>
+
+            <span class="eyebrow">
+              AUTO PLAN
+            </span>
+
+            <h3 id="plan-start-label">
+              Starting at 9:00 AM
+            </h3>
+
           </div>
 
-          <span id="break-label" class="break-badge">10 min breaks</span>
+          <span id="break-label" class="break-badge">
+            10 min breaks
+          </span>
+
         </div>
 
-        <div id="mindflow-plan" class="plan-list"></div>
+
+        <div
+          id="mindflow-plan"
+          class="plan-list"
+        ></div>
 
       </div>
 
 
-      <button id="start-flow-btn" class="primary-btn">
+      <button
+        id="start-flow-btn"
+        class="primary-btn"
+      >
         Start My Flow →
       </button>
 
@@ -232,21 +300,31 @@
   </section>
 
 
-  <!-- FLOW -->
+  <!-- MINDFLOW -->
   <section id="flow-screen" class="screen">
 
     <div class="flow-top">
 
-      <span class="eyebrow" id="flow-mode-label">
+      <span
+        class="eyebrow"
+        id="flow-mode-label"
+      >
         MINDFLOW
       </span>
 
+
       <div class="flow-progress">
-        <span id="flow-progress-text">Task 1 of 1</span>
+
+        <span id="flow-progress-text">
+          Task 1 of 1
+        </span>
 
         <div class="progress-bar">
+
           <div id="progress-fill"></div>
+
         </div>
+
       </div>
 
     </div>
@@ -254,38 +332,62 @@
 
     <div class="flow-card">
 
-      <div id="flow-category" class="flow-category">
+      <div
+        id="flow-category"
+        class="flow-category"
+      >
         FOCUS
       </div>
 
-      <h1 id="flow-task">Your task</h1>
+
+      <h1 id="flow-task">
+        Your task
+      </h1>
+
 
       <p id="flow-description">
         Focus on this one thing. Nothing else.
       </p>
 
 
-      <div id="timer" class="timer">
+      <div
+        id="timer"
+        class="timer"
+      >
         00:00
       </div>
 
 
-      <div id="timer-message" class="timer-message">
+      <div
+        id="timer-message"
+        class="timer-message"
+      >
         Stay focused.
       </div>
 
 
       <div class="flow-controls">
 
-        <button id="pause-btn" class="secondary-btn">
+        <button
+          id="pause-btn"
+          class="secondary-btn"
+        >
           Pause
         </button>
 
-        <button id="skip-btn" class="secondary-btn">
+
+        <button
+          id="skip-btn"
+          class="secondary-btn"
+        >
           Skip
         </button>
 
-        <button id="end-task-btn" class="danger-btn">
+
+        <button
+          id="end-task-btn"
+          class="danger-btn"
+        >
           End Task
         </button>
 
@@ -294,7 +396,9 @@
 
       <div class="next-task">
 
-        <span>UP NEXT</span>
+        <span>
+          UP NEXT
+        </span>
 
         <strong id="next-task-title">
           —
@@ -312,17 +416,27 @@
 
     <div class="complete-box">
 
-      <div class="complete-icon">✓</div>
+      <div class="complete-icon">
+        ✓
+      </div>
 
-      <span class="eyebrow">MINDFLOW COMPLETE</span>
+      <span class="eyebrow">
+        MINDFLOW COMPLETE
+      </span>
 
-      <h1>You've done enough<br>for today.</h1>
+      <h1>
+        You've done enough<br>
+        for today.
+      </h1>
 
       <p id="completion-message">
         You turned mental clutter into progress.
       </p>
 
-      <button id="restart-btn" class="primary-btn">
+      <button
+        id="restart-btn"
+        class="primary-btn"
+      >
         Start Again
       </button>
 
@@ -335,3 +449,4 @@
 
 </body>
 </html>
+```
